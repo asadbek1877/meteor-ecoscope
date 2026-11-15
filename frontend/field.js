@@ -25,7 +25,10 @@
     dash.classList.add("is-in");
     /* the background video starts decoding only when the page has finished sliding in (and, on a prerendered
        page, only once it is really shown), so video work never competes with the transition */
-    (window.dalaviyArrival || Promise.resolve()).then(loadVideo);
+    /* The clip may already be loaded (it is warmed up during the journey's last scene), so after loading it is
+       always asked to play as well; and once more when the journey layer is gone. */
+    (window.dalaviyArrival || Promise.resolve()).then(() => { loadVideo(); syncVideo(); });
+    setTimeout(syncVideo, 900);
   }
   if (journeyOpen()) {
     document.addEventListener("journey:exit", enter, { once: true });
@@ -44,7 +47,7 @@
 
   /* ---------- background video: loads once, loops natively, pauses when unseen ---------- */
   const video = $("dash-video");
-  let videoVisible = true;
+  let playTries = 0;
   function loadVideo() {
     if (!video || video.getAttribute("src") || reduceMotion.matches || saveData) return;
     video.preload = "auto";
@@ -54,13 +57,26 @@
   }
   function syncVideo() {
     if (!video || !video.getAttribute("src")) return;
-    const run = entered && videoVisible && !document.hidden && !reduceMotion.matches;
-    if (run && video.paused) video.play().catch(() => { /* autoplay blocked: the poster stays */ });
+    /* visibility is measured now: the observer's first answer can be stale when the page arrives through a
+       transition (it said "not visible" and never changed again, so the clip stayed paused) */
+    const r = video.getBoundingClientRect();
+    const onScreen = r.width > 0 && r.bottom > 0 && r.right > 0 && r.top < window.innerHeight && r.left < window.innerWidth;
+    const run = entered && onScreen && !document.hidden && !reduceMotion.matches;
+    if (run && video.paused) {
+      /* play() can be interrupted (a new load, the page still sliding in): try again a few times, then the poster stays */
+      video.play().then(() => { playTries = 0; }, () => { if (++playTries <= 4) setTimeout(syncVideo, 400 * playTries); });
+    }
     else if (!run && !video.paused) video.pause();
   }
   if (video) {
-    new IntersectionObserver(([entry]) => { videoVisible = entry.isIntersecting; syncVideo(); }).observe(video);
+    new IntersectionObserver(() => syncVideo()).observe(video);   /* only a trigger; syncVideo measures itself */
     document.addEventListener("visibilitychange", syncVideo);
+    video.addEventListener("canplay", syncVideo);        /* a play() asked before enough data arrived is retried here */
+    /* Events can be missed (a page arriving through a transition, the window losing focus, the journey layer leaving):
+       a cheap check every 2 s, plus focus and bfcache restores, puts a visible, paused background video back to play. */
+    window.addEventListener("focus", syncVideo);
+    window.addEventListener("pageshow", syncVideo);
+    setInterval(() => { if (entered && !document.hidden) { if (!video.getAttribute("src")) loadVideo(); syncVideo(); } }, 2000);
     reduceMotion.addEventListener("change", () => (reduceMotion.matches ? video.pause() : (loadVideo(), syncVideo())));
   }
 
