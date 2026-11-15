@@ -22,7 +22,11 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
   const conn = navigator.connection;
-  const light = Boolean(conn && (conn.saveData || /(^|-)2g|3g/.test(conn.effectiveType || ""))) || window.matchMedia("(max-width: 700px)").matches;
+  /* Stills instead of video only when the visitor asked to save data, on a really slow (2G) link, or on a phone.
+     effectiveType "3g" is only Chrome's rough estimate (it reports it for many normal connections, also for a
+     narrow desktop window), so it must not switch the videos off. */
+  const light = Boolean(conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || "")))
+    || window.matchMedia("(max-width: 700px) and (pointer: coarse)").matches;
   /* phones, Save-Data and slow networks get the still posters: the three clips are 32 MB */
   const motion = () => !reduceMotion.matches && !light;
 
