@@ -22,8 +22,8 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
   const conn = navigator.connection;
-  const light = Boolean(conn && (conn.saveData || /(^|-)2g|3g/.test(conn.effectiveType || ""))) || window.matchMedia("(max-width: 700px)").matches;
-  /* phones, Save-Data and slow networks get the still posters: the three clips are 32 MB */
+  const light = Boolean(conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ""))) || window.matchMedia("(max-width: 700px)").matches;
+  /* phones, Save-Data and 2g get the still posters (Chrome reports "3g" for many normal connections): the three clips are 32 MB */
   const motion = () => !reduceMotion.matches && !light;
 
   const FPS = 24;
