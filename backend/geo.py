@@ -19,7 +19,7 @@ import httpx
 
 NOMINATIM = "https://nominatim.openstreetmap.org"
 PHOTON = "https://photon.komoot.io/api/"
-USER_AGENT = "TerraShift/1.0 (NASA Space Apps 2026 field analysis demo)"
+USER_AGENT = "EcoScope/1.0 (NASA Space Apps 2026 field analysis demo)"
 TIMEOUT_S = 8
 ROAD_BUFFER_M = 12  # a point this close to a building edge or road line counts as "on it"
 URBAN_BUFFER_M = 60  # a town address with a building or road this close counts as built-up land

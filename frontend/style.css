@@ -1,4 +1,4 @@
-/* TerraShift: mission-control dark theme with a light variant. Colours are tokens only. */
+/* EcoScope: mission-control dark theme with a light variant. Colours are tokens only. */
 :root {
   color-scheme: dark;
   --bg: #0B0F19; --panel: #151C2C; --panel-2: #1B2438; --line: #232F46;

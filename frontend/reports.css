@@ -1,4 +1,4 @@
-/* Dalaviy reports page (Hisobotlar): sources, methods, image credits, provider settings.
+/* EcoScope reports page (Hisobotlar): sources, methods, image credits, provider settings.
    Reuses the old .card markup from style.css inside the shared .dash shell (field.css + glass.css). */
 .rep .rep-atmos {
   background:
@@ -37,3 +37,60 @@
 .rep #providers table { width: 100%; border-collapse: collapse; }
 .rep #providers th, .rep #providers td { padding: 8px 10px; border-bottom: 1px solid rgba(120, 170, 220, .14); text-align: left; color: #dbe4ef; }
 @media (max-width: 640px) { .rep-main { padding: 16px 16px 40px; } .rep .card.dash-panel { padding: 18px 16px; } }
+
+/* ---------- report layout: intro, summary, results, place, sources ---------- */
+.rep-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin: 0 0 22px; flex-wrap: wrap; }
+.rep-title { margin: 0; font-family: var(--head-font); font-size: clamp(30px, calc(var(--u) * 44), 46px); font-weight: 750; letter-spacing: -.02em; color: #f4f8fd; }
+.rep-lead { margin: 10px 0 0; max-width: 62ch; color: #c7d2e1; font-size: 15.5px; line-height: 1.55; }
+.rep-meta { margin: 10px 0 0; color: #8fb7e8; font-size: 13px; }
+.rep-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.rep-actions .dash-btn { height: 42px; padding: 0 18px; font-size: 14px; }
+.rep-actions .dash-btn[disabled] { opacity: .5; cursor: progress; }
+.rep-section { margin: 0 0 28px; }
+.rep-h2 { margin: 0 0 12px; font-family: var(--head-font); font-size: 18px; font-weight: 700; color: #e8f0fb; letter-spacing: -.005em; }
+.rep-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.rep-tile {
+  display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border-radius: 16px;
+  border: 1px solid rgba(110, 170, 230, .26); background: linear-gradient(180deg, rgba(14, 36, 62, .9), rgba(7, 19, 36, .92));
+}
+.rep-tile.is-good { border-color: rgba(61, 220, 132, .45); }
+.rep-tile.is-warn { border-color: rgba(251, 191, 36, .5); }
+.rep-tile.is-bad { border-color: rgba(251, 113, 133, .55); }
+.rt-k { color: #9eb0c7; font-size: 13px; }
+.rt-v { color: #fff; font-size: 22px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.rt-d { color: #b6c4d6; font-size: 13px; line-height: 1.45; }
+.rep-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; }
+.rep .card.rep-result { margin: 0; padding: 18px 20px; }
+.rep-result h3 { margin: 0 0 6px; font-size: 15px; color: #f2f6fc; }
+.rr-claim { margin: 0 0 12px; color: #dbe4ef; font-size: 14px; line-height: 1.5; min-height: 3em; }
+.rr-chart { position: relative; height: 220px; }
+.rr-src { margin: 10px 0 0; color: #8ea2bb; font-size: 12px; line-height: 1.45; }
+.rep .card.rep-geo { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 20px; margin: 0; padding: 18px 20px; }
+.rep-geo dt { color: #9eb0c7; font-size: 12.5px; }
+.rep-geo dd { margin: 2px 0 0; color: #eef3fa; font-size: 14.5px; }
+.rep .card.rep-kinds { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 22px; margin: 0 0 12px; padding: 18px 20px; }
+.rk h3 { margin: 0 0 4px; font-size: 14.5px; color: #f2f6fc; }
+.rk p { margin: 0 0 6px; color: #9eb0c7; font-size: 12.5px; }
+.rk ul { margin: 0; padding-left: 18px; color: #dbe4ef; font-size: 13.5px; line-height: 1.55; }
+.rep-disclaimer { margin: 0 0 14px; color: #8ea2bb; font-size: 12.5px; line-height: 1.55; max-width: 110ch; }
+.rep .card.rep-more { margin: 0 0 10px; padding: 0; }
+.rep-more > summary { padding: 14px 20px; cursor: pointer; color: #cfe0f4; font-weight: 600; list-style: none; }
+.rep-more > summary::-webkit-details-marker { display: none; }
+.rep-more > summary::after { content: "+"; float: right; color: #7cc4ff; font-weight: 700; }
+.rep-more[open] > summary::after { content: "–"; }
+.rep-more > :not(summary) { margin-left: 20px; margin-right: 20px; }
+.rep-more[open] { padding-bottom: 14px; }
+
+/* ---------- print / Save as PDF: a clean light document ---------- */
+@media print {
+  @page { margin: 14mm; }
+  html, body, .dash { background: #fff !important; color: #111 !important; }
+  .dash-top, .dash-bg, .rep-actions, .skip-link, .dash-loading, .dash-banner, .rep-more, #provider-settings { display: none !important; }
+  .rep-main { max-width: none; padding: 0; }
+  .rep-title, .rep-h2, .rep-result h3, .rk h3, .rt-v, .rep-geo dd { color: #111 !important; }
+  .rep-lead, .rep-meta, .rr-claim, .rt-d, .rt-k, .rr-src, .rep-geo dt, .rk p, .rk ul, .rep-disclaimer { color: #333 !important; }
+  .rep-tile, .rep .card.dash-panel { background: #fff !important; border: 1px solid #bbb !important; box-shadow: none !important; break-inside: avoid; }
+  .rep-section { break-inside: avoid-page; }
+  .dash [data-in], .dash [data-reveal] { opacity: 1 !important; transform: none !important; animation: none !important; }
+  #news-section, #basis-section, .clim-bottom, .crop-method, .rep .card.dash-panel[data-reveal] { content-visibility: visible !important; }
+}

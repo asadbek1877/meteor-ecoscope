@@ -1,4 +1,4 @@
-/* Dalaviy field section: UI behaviour only (data rendering lives in app.js).
+/* EcoScope field section: UI behaviour only (data rendering lives in app.js).
    Entrance after the landing journey, background video, tabs, menus, dropdowns, the priorities dialog and row details. */
 (() => {
   "use strict";
@@ -6,7 +6,9 @@
   if (!dash) return;
   const $ = (id) => document.getElementById(id);
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+  const conn = navigator.connection;
+  const light = Boolean(conn && (conn.saveData || /(^|-)2g|3g/.test(conn.effectiveType || ""))) || window.matchMedia("(max-width: 700px)").matches;
+  const saveData = light;   /* background videos stay as posters on phones and slow connections */
   const later = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   /* ---------- entrance: right away with /#app, otherwise when the journey hands over ---------- */
@@ -17,7 +19,9 @@
     if (entered) return;
     entered = true;
     dash.classList.add("is-in");
-    loadVideo();
+    /* the background video starts decoding only when the page has finished sliding in (and, on a prerendered
+       page, only once it is really shown), so video work never competes with the transition */
+    (window.dalaviyArrival || Promise.resolve()).then(loadVideo);
   }
   if (journeyOpen()) {
     document.addEventListener("journey:exit", enter, { once: true });

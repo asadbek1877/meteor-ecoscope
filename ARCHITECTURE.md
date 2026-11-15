@@ -1,6 +1,6 @@
-# TerraShift architecture
+# EcoScope architecture
 
-TerraShift helps a farmer compare crop rotations for one field, using 35 years of
+EcoScope helps a farmer compare crop rotations for one field, using 35 years of
 NASA climate data. This file explains how the app is built, how to run it, and what
 is still a draft.
 
@@ -73,7 +73,7 @@ with `ADMIN_TOKEN` set: a map tile layer, or a JSON API that is returned as raw
 | `backend/texts.py` | warnings and advice in English and Uzbek |
 | `backend/crops.json`, `backend/rotations.json` | crop and rotation parameters (edit these, not the code) |
 | `frontend/` | static pages: field setup (`index.html`), rotations, climate, crops, current conditions and sources; shared `style.css`, `app.js`, `i18n.js`, Leaflet and Chart.js in `vendor/` |
-| `tests/test_backend.py` | 16 tests, including two FAO-56 worked examples |
+| `tests/test_backend.py` | tests (run `python -m pytest tests -q`), including two FAO-56 worked examples |
 
 ## Method
 

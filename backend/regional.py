@@ -32,7 +32,7 @@ LOCAL_FILE = Path(__file__).parent / "data" / "local_crops.json.gz"
 MIN_SHARE = 0.005          # a crop on less than 0.5 % of the cropland is not "typical"
 MAX_FROST, MAX_COLD = 0.3, 0.3   # share of years the crop may fail for that reason
 # Heat does not rule a crop out: it cuts yield, which the risk and income scores already count.
-HORTICULTURE = {"tomato", "onion", "potato"}  # shown in the profile, left out of field-crop rotations:
+HORTICULTURE = {"tomato", "onion", "potato", "watermelon", "melon", "cucumber", "carrot", "cabbage"}  # shown in the profile, left out of field-crop rotations:
                                     # their gross income without production costs would dominate the ranking
 OUTLIER = 3.0                       # a country income above 3x the world median is treated as a data error
 MAX_ROTATIONS = 8
@@ -342,7 +342,10 @@ def plan(d: Days, iso: str | None, soil: str, irrigation: str, awc: float | None
     if default_id is None and cands:
         default_id = cands[0]["id"]
 
-    show = list(dict.fromkeys(grown[:8] + suggested))
+    # the crop table: what is grown here first, then every other crop that works at this point (up to 18)
+    others = sorted((c for c in local if ok(c) and c not in grown and c not in suggested),
+                    key=lambda c: (field._period(local[c], RECENT) or {}).get("irrigation_mean_mm", 1e9))
+    show = list(dict.fromkeys(grown[:8] + suggested + others))[:18]
     if not cell and country:
         for t in country["top"][:10]:
             ids = crop_ids(t["item"])

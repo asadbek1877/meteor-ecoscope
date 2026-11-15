@@ -385,6 +385,7 @@ class Field:
                 "level": max(water, stress, key=["low", "moderate", "high"].index),
                 "category": crop.get("category", "other"),
                 "t_opt_c": crop.get("t_opt_c"),
+                "season_t_min_c": crop.get("season_t_min_c"),
                 "suitability": suitability(crop, recent),
                 "yield_t_ha": expected_yield(crop, recent),
             })
@@ -468,6 +469,7 @@ class Field:
         median = {it["id"]: {k: percentile([it["_per_year"][y][k] for y in common], 50)
                              for k in ("water", "income", "risk")} for it in items}
         overall = scores(median)
+        price_check = _price_check(items, common, median, soil_of, scores, total)
         yearly_totals = {it["id"]: [] for it in items}
         wins = {it["id"]: 0 for it in items}
         for y in common:
@@ -518,6 +520,8 @@ class Field:
             # A lead smaller than the year-to-year spread means the choice is not clear-cut.
             "lead": rnd(best["scores"]["total"] - runner["scores"]["total"], 1) if runner else None,
             "clear_winner": bool(runner) and best["wins"] >= 0.6 * len(common),
+            # the replay only varies the weather; prices are assumptions, so the choice is also checked against them
+            "price_check": price_check,
             "soil_class": self.soil,
             "irrigation_method": self.method,
             "irrigation_efficiency": self.efficiency,
@@ -536,12 +540,45 @@ class Field:
                 continue  # weather record does not cover this year for every crop
             net = sum(r["irrigation"] for slot in runs for r in slot)
             stress = sum(max(r["stress"] for r in slot) for slot in runs)
-            income = sum(self.income(crop_id) * (1 - loss * r["stress"])
-                         for slot, slot_runs in zip(rot["years"], runs)
-                         for crop_id, r in zip(slot, slot_runs))
+            by_crop: dict[str, float] = {}
+            for slot, slot_runs in zip(rot["years"], runs):
+                for crop_id, r in zip(slot, slot_runs):
+                    by_crop[crop_id] = by_crop.get(crop_id, 0.0) + self.income(crop_id) * (1 - loss * r["stress"]) / n
             out[y] = {"net_mm": net / n, "water": self.gross_m3(net / n),
-                      "risk": 100 * stress / n, "income": income / n}
+                      "risk": 100 * stress / n, "income": sum(by_crop.values()), "by_crop": by_crop}
         return out
+
+
+PRICE_STEP = 0.2   # each crop price is moved by this share up and down
+
+
+def _price_check(items: list, common: list, median: dict, soil_of: dict, scores, total) -> dict:
+    """Does the best rotation change when the price of any one crop is 20 % lower or higher?
+
+    Income per crop and year is scaled for that crop only; water, risk and soil stay as they are.
+    """
+    if not common or len(items) < 2:
+        return {"step_pct": round(PRICE_STEP * 100), "robust": True, "flips": []}
+    feasible = [it["id"] for it in items if not it["conflicts"]] or [it["id"] for it in items]
+
+    def best_with(crop: str | None, factor: float) -> str:
+        med = {}
+        for it in items:
+            py = it["_per_year"]
+            incomes = [py[y]["income"] + (factor - 1) * py[y]["by_crop"].get(crop, 0.0) if crop else py[y]["income"] for y in common]
+            med[it["id"]] = {"water": median[it["id"]]["water"], "risk": median[it["id"]]["risk"], "income": percentile(incomes, 50)}
+        s = scores(med)
+        return max(feasible, key=lambda rid: total(s[rid], soil_of[rid]))
+
+    base = best_with(None, 1.0)
+    crops = sorted({c for it in items for y in common for c in it["_per_year"][y]["by_crop"]})
+    flips = []
+    for crop in crops:
+        for factor in (1 - PRICE_STEP, 1 + PRICE_STEP):
+            other = best_with(crop, factor)
+            if other != base:
+                flips.append({"crop": crop, "name": CROPS[crop]["name"], "change_pct": round((factor - 1) * 100), "best_id": other})
+    return {"step_pct": round(PRICE_STEP * 100), "robust": not flips, "flips": flips[:8]}
 
 
 def _level(value, cuts) -> str:

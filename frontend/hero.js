@@ -1,6 +1,6 @@
-/* TerraShift landing journey: scene controller.
+/* EcoScope landing journey: scene controller.
    Scene 1  space.mp4     loops behind the hero copy.
-   Scene 2  approach.mp4  plays once after "Boshlash"; its first frame is the loop's seam frame.
+   Scene 2  approach.mp4  plays once after "Boshlash" (3.8 s, at its own speed); its first frame is the loop's seam frame.
    Scene 3  surface.mp4   plays once and holds its last frame; its first frame is approach.mp4's last frame.
    Videos are stacked; a video only becomes visible after it has presented a frame, so a seam can never show black.
    No dependencies. Playback and the animation loop stop whenever the tab is hidden. */
@@ -21,8 +21,10 @@
   const ctx = canvas.getContext("2d");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-  const saveData = Boolean(navigator.connection && navigator.connection.saveData);
-  const motion = () => !reduceMotion.matches && !saveData;
+  const conn = navigator.connection;
+  const light = Boolean(conn && (conn.saveData || /(^|-)2g|3g/.test(conn.effectiveType || ""))) || window.matchMedia("(max-width: 700px)").matches;
+  /* phones, Save-Data and slow networks get the still posters: the three clips are 32 MB */
+  const motion = () => !reduceMotion.matches && !light;
 
   const FPS = 24;
   const DISSOLVE = 1.1;        /* s, space > approach when the loop is mid-way */
@@ -85,6 +87,8 @@
   const untilTime = (video, t) => new Promise((resolve) => {
     const step = () => (video.ended || video.currentTime >= t ? resolve() : requestAnimationFrame(step));
     step();
+    /* frames can stop coming (a covered window): the clock still ends the wait on time */
+    setTimeout(resolve, Math.max(0, t - video.currentTime) * 1000 + 250);
   });
   /* the loop's last frames dissolve into frame 0, which is approach.mp4's first frame */
   const untilLoopSeam = (video) => new Promise((resolve) => {
@@ -104,12 +108,68 @@
     journey.classList.add("is-flaring");
   };
 
+
+  /* ---------- sound: each clip carries its own original audio track ----------
+     Browsers only allow sound after the visitor has interacted with the page, so the first scene starts
+     silent. From the first click ("Boshlash" or the sound button) the clip on screen is audible; exactly one
+     clip is audible at a time, and clips hand over with a short volume fade that follows the picture dissolve.
+     The button shows "on" only while a clip is really playing with sound. */
+  const soundButton = document.getElementById("journey-sound");
+  const LEVEL = new Map([[space, 0.9], [approach, 0.5], [surface, 0.85]]);   /* the approach track is mastered much louder */
+  const soundWanted = true;     /* always on; browsers allow it from the first click */
+  let unlocked = Boolean(navigator.userActivation && navigator.userActivation.hasBeenActive);
+  const fades = new Map();
+  const fadeTo = (video, to, ms) => {
+    clearInterval(fades.get(video));
+    if (to > 0 && video.muted) { video.volume = 0; video.muted = false; }
+    const from = video.muted ? 0 : video.volume, started = performance.now();
+    const finish = () => { clearInterval(fades.get(video)); fades.delete(video); video.volume = to; if (to === 0) video.muted = true; showSound(); };
+    if (ms <= 0 || from === to) return finish();
+    fades.set(video, setInterval(() => {
+      const k = Math.min(1, (performance.now() - started) / ms);
+      video.volume = Math.max(0, Math.min(1, from + (to - from) * k));
+      if (k >= 1) finish();
+    }, 40));
+  };
+  const audibleNow = () => [space, approach, surface].some((v) => !v.muted && !v.paused && !v.ended && v.volume > 0.01);
+  function showSound() {
+    if (!soundButton) return;
+    const on = audibleNow() || (soundWanted && unlocked && alive && scene === 3 && surface.ended);   /* after the last clip: still "on" */
+    soundButton.setAttribute("aria-pressed", String(on));
+    soundButton.classList.toggle("is-on", on);
+  }
+  /* the clip on screen gets the sound, every other clip fades out */
+  function applySound(ms = 350) {
+    const on = soundWanted && unlocked && alive && motion() && !document.hidden;
+    for (const video of [space, approach, surface]) {
+      const target = on && video === current && video.getAttribute("src") ? LEVEL.get(video) : 0;
+      if (target > 0 || !video.muted) fadeTo(video, target, ms);
+    }
+    showSound();
+  }
+  if (soundButton) {
+    soundButton.hidden = !motion();
+    soundButton.addEventListener("click", () => {
+      const on = soundButton.getAttribute("aria-pressed") === "true";
+      unlocked = true;                                   /* this click is the interaction the browser asks for */
+      try { localStorage.setItem("dalaviy:sound", soundWanted ? "on" : "off"); } catch { /* private mode */ }
+      applySound(250);
+      /* if the browser still refuses sound, the clip keeps playing silently and the button stays "off" */
+      if (soundWanted && current.paused && !current.ended && current.getAttribute("src")) {
+        current.play().catch(() => { current.muted = true; current.play().catch(() => {}); showSound(); });
+      }
+    });
+    [space, approach, surface].forEach((v) => ["play", "pause", "ended", "volumechange"].forEach((e) => v.addEventListener(e, showSound)));
+  }
+
   /* ---------- scene 1 > 2 > 3 ---------- */
   async function begin() {
     if (scene !== 1 || busy) return;
     busy = true;
     const id = ++run;
     startButton.classList.add("is-pressed");
+    unlocked = true;                                   /* "Boshlash" is a click: sound is allowed from here on */
+    applySound(400);
 
     if (!motion()) {                                   /* still frames, short fade */
       setScene(3);
@@ -134,6 +194,7 @@
       if (id !== run) return;
       if (await start(approach)) {
         current = approach;
+        applySound(atSeam ? SEAM_FADE * 1000 : 600);
         if (atSeam) await crossfade(approach, SEAM_FADE);
         else { flare(); await crossfade(approach, DISSOLVE); }
         if (id !== run) return;
@@ -147,9 +208,10 @@
     /* if surface is still loading, its poster (= its first frame) shows until playback starts */
     surface.currentTime = 0;
     const handoff = start(surface);
+    current = surface;
+    applySound(450);                                   /* the sound hands over with the picture, not after it */
     await Promise.race([handoff, later(600)]);
     if (id !== run) return;
-    current = surface;
     setScene(3);
     await crossfade(surface, approachReady ? HANDOFF + 0.05 : 1.2);
     if (id !== run) return;
@@ -168,6 +230,7 @@
     if (id !== run) return;
     current = space;
     setScene(1);
+    applySound(900);
     journey.style.setProperty("--xf", "1.2s");
     surface.classList.remove("is-on");
     approach.classList.remove("is-on");
@@ -184,6 +247,7 @@
     event.preventDefault();
     run++;
     alive = false;
+    applySound(500);                                   /* alive is false: every clip fades out before it is freed */
     journey.classList.add("is-done");
     root.classList.remove("journey-on");
     document.dispatchEvent(new CustomEvent("journey:exit"));
@@ -250,6 +314,7 @@
     if (!alive) return;
     if (document.hidden || !motion()) current.pause();
     else if (!current.ended && current.getAttribute("src")) current.play().catch(() => { /* autoplay blocked: the poster stays */ });
+    applySound(200);
   }
 
   window.addEventListener("pointermove", (e) => {
@@ -261,6 +326,7 @@
   document.addEventListener("visibilitychange", sync);
   reduceMotion.addEventListener("change", () => {
     if (reduceMotion.matches) ["--px", "--py"].forEach((p) => journey.style.removeProperty(p));
+    if (soundButton) soundButton.hidden = !motion();
     drawStars(0);
     sync();
   });

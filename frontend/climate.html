@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Iqlim | Dalaviy</title>
+  <title>Iqlim | EcoScope</title>
   <meta name="description" content="Climate trends for your region from 35 years of NASA POWER data, with a trend projection to 2040.">
-  <script src="/transitions.js?v=20261116"></script>
+  <script src="/transitions.js?v=20261121"></script>
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-latin.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="/fonts/manrope-latin.woff2" crossorigin>
   <link rel="preload" as="image" href="/media/climate-poster.webp" fetchpriority="high">
-  <link rel="stylesheet" href="/style.css?v=20261116">
-  <link rel="stylesheet" href="/field.css?v=20261116">
-  <link rel="stylesheet" href="/climate.css?v=20261116">
-  <link rel="stylesheet" href="/glass.css?v=20261116">
-  <link rel="stylesheet" href="/transitions.css?v=20261116">
-  <script type="speculationrules">{"prefetch": [{"where": {"selector_matches": ".dash-nav a"}, "eagerness": "moderate"}]}</script>
+  <link rel="stylesheet" href="/style.css?v=20261121">
+  <link rel="stylesheet" href="/field.css?v=20261121b">
+  <link rel="stylesheet" href="/climate.css?v=20261121">
+  <link rel="stylesheet" href="/glass.css?v=20261121">
+  <link rel="stylesheet" href="/transitions.css?v=20261121">
+  <script type="speculationrules">{"prerender": [{"where": {"selector_matches": ".dash-nav a, .hero-links a"}, "eagerness": "moderate"}], "prefetch": [{"where": {"selector_matches": ".dash-nav a, .hero-links a, .dash-pop a"}, "eagerness": "moderate"}]}</script>
 </head>
 <body data-page="climate" data-title="page_title_climate" data-providers="nasa_power,open_meteo">
   <a class="skip-link" href="#main-content" data-t="skip_to_content"></a>
@@ -35,7 +35,7 @@
     </div>
 
     <header data-shell-header></header>
-    <script src="/shell.js?v=20261116"></script>
+    <script src="/shell.js?v=20261121"></script>
     <p id="analysis-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
     <main class="clim-main" id="main-content">
@@ -143,6 +143,12 @@
           <button type="button" class="clim-advice-go" id="clim-advice-open" data-t-aria="clim_advice_more"><svg><use href="#i-arrow"/></svg></button>
         </section>
       </section>
+      <!-- how good the data is and how the frost dates moved -->
+      <section class="dash-panel clim-card clim-quality" aria-labelledby="clim-q-title" data-reveal hidden>
+        <h2 class="dash-panel-title" id="clim-q-title"><svg><use href="#i-shield"/></svg><span data-t="clim_quality"></span></h2>
+        <div class="clim-q-grid" id="clim-quality"></div>
+        <p class="clim-findings-key" data-t="clim_quality_note"></p>
+      </section>
     </main>
 
     <dialog id="clim-advice-dialog" class="dash-dialog clim-advice-dialog" aria-labelledby="clim-advice-dialog-title">
@@ -156,8 +162,8 @@
   </div>
 
   <script src="/vendor/chart.umd.min.js"></script>
-  <script src="/i18n.js?v=20261116"></script>
-  <script src="/app.js?v=20261116"></script>
-  <script src="/field.js?v=20261116"></script>
+  <script src="/i18n.js?v=20261121"></script>
+  <script src="/app.js?v=20261121"></script>
+  <script src="/field.js?v=20261121"></script>
 </body>
 </html>

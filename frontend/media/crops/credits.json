@@ -64,5 +64,89 @@
   "page": "https://commons.wikimedia.org/wiki/File:Russet_potato_cultivar_with_sprouts.jpg",
   "license": "Public domain",
   "author": ""
+ },
+ "barley": {
+  "file": "File:Hordeum vulgare MHNT.BOT.2015.2.39.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Hordeum_vulgare_MHNT.BOT.2015.2.39.jpg",
+  "license": "CC BY-SA 3.0",
+  "author": ""
+ },
+ "rapeseed": {
+  "file": "File:Brassica napus-Colza-Fleurs-20190117.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Brassica_napus-Colza-Fleurs-20190117.jpg",
+  "license": "CC BY-SA 4.0",
+  "author": ""
+ },
+ "lentil": {
+  "file": "File:Lentils red and brown.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Lentils_red_and_brown.jpg",
+  "license": "CC BY-SA 3.0",
+  "author": ""
+ },
+ "millet": {
+  "file": "File:Panicum miliaceum MHNT.BOT.2015.34.20.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Panicum_miliaceum_MHNT.BOT.2015.34.20.jpg",
+  "license": "CC BY-SA 4.0",
+  "author": ""
+ },
+ "onion": {
+  "file": "File:Onion on White.JPG",
+  "page": "https://commons.wikimedia.org/wiki/File:Onion_on_White.JPG",
+  "license": "CC BY-SA 3.0",
+  "author": ""
+ },
+ "melon": {
+  "file": "File:Cantaloupe.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Cantaloupe.jpg",
+  "license": "Public domain",
+  "author": ""
+ },
+ "cucumber": {
+  "file": "File:Cucumber from Denmark.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Cucumber_from_Denmark.jpg",
+  "license": "CC0",
+  "author": ""
+ },
+ "carrot": {
+  "file": "File:Carrot vegetable on white background.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Carrot_vegetable_on_white_background.jpg",
+  "license": "Public domain",
+  "author": ""
+ },
+ "rice": {
+  "file": "File:Oryza sativa MHNT.BOT.2015.2.52.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Oryza_sativa_MHNT.BOT.2015.2.52.jpg",
+  "license": "CC BY-SA 3.0",
+  "author": ""
+ },
+ "groundnut": {
+  "file": "File:Arachis hypogaea MHNT.BOT.2020.2.20.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Arachis_hypogaea_MHNT.BOT.2020.2.20.jpg",
+  "license": "CC BY-SA 4.0",
+  "author": ""
+ },
+ "dry_bean": {
+  "file": "File:Phaseolus vulgaris MHNT.BOT.2016.24.73.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Phaseolus_vulgaris_MHNT.BOT.2016.24.73.jpg",
+  "license": "CC BY-SA 3.0",
+  "author": ""
+ },
+ "sugar_beet": {
+  "file": "File:SugarBeet.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:SugarBeet.jpg",
+  "license": "Public domain",
+  "author": ""
+ },
+ "watermelon": {
+  "file": "File:Watermelon.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Watermelon.jpg",
+  "license": "Public domain",
+  "author": ""
+ },
+ "cabbage": {
+  "file": "File:Brassica oleracea 2011 G1.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Brassica_oleracea_2011_G1.jpg",
+  "license": "Public domain",
+  "author": ""
  }
 }

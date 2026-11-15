@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TerraShift</title>
+  <title>EcoScope</title>
   <meta name="description" content="Compare crop rotations for your field with 35 years of NASA climate data.">
-  <script src="/transitions.js?v=20261116"></script>
+  <script src="/transitions.js?v=20261121"></script>
   <link rel="stylesheet" href="/vendor/leaflet.css">
-  <link rel="stylesheet" href="/style.css?v=20261116">
-  <link rel="stylesheet" href="/hero.css?v=20261116">
+  <link rel="stylesheet" href="/style.css?v=20261121">
+  <link rel="stylesheet" href="/hero.css?v=20261121">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-latin.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="/fonts/manrope-latin.woff2" crossorigin>
-  <link rel="stylesheet" href="/field.css?v=20261116">
-  <link rel="stylesheet" href="/glass.css?v=20261116">
-  <link rel="stylesheet" href="/transitions.css?v=20261116">
-  <link rel="stylesheet" href="/terra-extra.css">
-  <script type="speculationrules">{"prefetch": [{"where": {"selector_matches": ".dash-nav a, .site-nav a"}, "eagerness": "moderate"}]}</script>
+  <link rel="stylesheet" href="/field.css?v=20261121b">
+  <link rel="stylesheet" href="/glass.css?v=20261121">
+  <link rel="stylesheet" href="/transitions.css?v=20261121">
+  <link rel="stylesheet" href="/terra-extra.css?v=20261121">
+  <script type="speculationrules">{"prerender": [{"where": {"selector_matches": ".dash-nav a, .hero-links a"}, "eagerness": "moderate"}], "prefetch": [{"where": {"selector_matches": ".dash-nav a, .hero-links a, .dash-pop a"}, "eagerness": "moderate"}]}</script>
   <link rel="preload" as="image" href="/media/space-poster.webp" fetchpriority="high">
 </head>
 <body data-page="home" data-title="page_title_home">
@@ -30,11 +30,11 @@
       j.classList.add("is-armed");
     })(document.currentScript.parentElement);</script>
     <div class="journey-stage" aria-hidden="true">
-      <video class="jv jv-1" data-video="space" data-src="/media/space.mp4" poster="/media/space-poster.webp"
+      <video class="jv jv-1" data-video="space" data-src="/media/space.mp4?v=2" poster="/media/space-poster.webp"
         muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback tabindex="-1"></video>
-      <video class="jv jv-2" data-video="approach" data-src="/media/approach.mp4"
+      <video class="jv jv-2" data-video="approach" data-src="/media/approach.mp4?v=2"
         muted playsinline preload="none" disablepictureinpicture disableremoteplayback tabindex="-1"></video>
-      <video class="jv jv-3" data-video="surface" data-src="/media/surface.mp4" poster="/media/surface-poster.webp"
+      <video class="jv jv-3" data-video="surface" data-src="/media/surface.mp4?v=2" poster="/media/surface-poster.webp"
         muted playsinline preload="none" disablepictureinpicture disableremoteplayback tabindex="-1"></video>
       <div class="space-fx">
         <div class="hero-glow"></div>
@@ -48,40 +48,34 @@
 
     <!-- Scene 1: space -->
     <section class="scene-ui ui-1" aria-labelledby="hero-title">
-      <div class="hero-nav" data-enter="down" style="--d: 2500">
-        <a class="hero-brand" href="/" aria-label="TerraShift"><span class="logo" aria-hidden="true"></span>TerraShift</a>
-        <nav class="hero-links" data-t-aria="main_nav_label">
-          <a href="/rotations.html" data-t="nav_rotations"></a>
-          <a href="/climate.html" data-t="nav_climate"></a>
-          <a href="/crops.html" data-t="nav_crops"></a>
-          <a href="/sources.html" data-t="nav_sources"></a>
-        </nav>
+      <div class="hero-nav" data-enter="down" style="--d: 500">
+        <a class="hero-brand" href="/" aria-label="EcoScope"><span class="logo" aria-hidden="true"></span>EcoScope</a>
         <div class="hero-lang" role="group" data-t-aria="language_group">
           <button type="button" data-lang="uz">UZ</button>
           <button type="button" data-lang="en">EN</button>
         </div>
       </div>
       <div class="hero-copy">
-        <p class="hero-eyebrow" data-enter style="--d: 1100; --o: 60" data-t="hero_eyebrow"></p>
+        <p class="hero-eyebrow" data-enter style="--d: 150; --o: 60" data-t="hero_eyebrow"></p>
         <h1 class="hero-title" id="hero-title">
-          <span class="hero-title-top" data-enter style="--d: 1300; --o: 100" data-t="hero_title_top"></span>
-          <span class="hero-title-main" data-enter style="--d: 1480; --o: 140"><span data-t="hero_title_strong"></span> <span class="hero-accent" data-t="hero_title_accent"></span></span>
+          <span class="hero-title-top" data-enter style="--d: 230; --o: 100" data-t="hero_title_top"></span>
+          <span class="hero-title-main" data-enter style="--d: 310; --o: 140"><span data-t="hero_title_strong"></span> <span class="hero-accent" data-t="hero_title_accent"></span></span>
         </h1>
-        <p class="hero-lead" data-enter style="--d: 1700; --o: 180" data-t="hero_lead"></p>
-        <button type="button" class="hero-cta" id="journey-start" data-enter style="--d: 1920; --o: 120">
+        <p class="hero-lead" data-enter style="--d: 390; --o: 180" data-t="hero_lead"></p>
+        <button type="button" class="hero-cta" id="journey-start" data-enter style="--d: 300; --o: 120">
           <span data-t="hero_cta"></span>
           <span class="hero-cta-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg></span>
         </button>
         <ul class="hero-feats">
-          <li data-enter style="--d: 2150; --o: 220">
+          <li data-enter style="--d: 520; --o: 220">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 9.5 5 5M7 12l-4-4 4-4 4 4M17 20l-4-4 4-4 4 4M12 7l5 5-5 5-5-5zM4 17a3 3 0 0 0 3 3M2.5 18.5A5 5 0 0 0 5.5 21.5"/></svg>
             <span data-t="hero_feat_satellite"></span>
           </li>
-          <li data-enter style="--d: 2270; --o: 250">
+          <li data-enter style="--d: 600; --o: 250">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>
             <span data-t="hero_feat_analysis"></span>
           </li>
-          <li data-enter style="--d: 2390; --o: 280">
+          <li data-enter style="--d: 680; --o: 280">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-8 5-14 15-14 0 9-5 14-13 14M4 21c2-6 6-9 11-11"/></svg>
             <span data-t="hero_feat_farming"></span>
           </li>
@@ -92,7 +86,7 @@
     <!-- Scene 3: surface. Scene 2 (the approach) is video only. -->
     <section class="scene-ui ui-3" aria-labelledby="feature-title" inert>
       <div class="hero-nav" data-enter="down" style="--d: 1300">
-        <button type="button" class="hero-brand" id="journey-restart" data-t-aria="journey_restart"><span class="logo" aria-hidden="true"></span>TerraShift</button>
+        <button type="button" class="hero-brand" id="journey-restart" data-t-aria="journey_restart"><span class="logo" aria-hidden="true"></span>EcoScope</button>
         <div class="hero-lang" role="group" data-t-aria="language_group">
           <button type="button" data-lang="uz">UZ</button>
           <button type="button" data-lang="en">EN</button>
@@ -140,7 +134,7 @@
     </div>
 
     <header data-shell-header></header>
-    <script src="/shell.js?v=20261116"></script>
+    <script src="/shell.js?v=20261121"></script>
     <p id="analysis-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
     <main class="dash-main" id="main-content">
@@ -320,7 +314,6 @@
               <div class="view-head"><h3 data-t="chart_title"></h3><span class="muted small" id="rotations-meta"></span></div>
               <div class="chart-box"><canvas id="scores-chart" role="img" data-t-aria="chart_title"></canvas></div>
               <ul id="advice-top" class="dash-advice"></ul>
-              <a class="dash-link" href="/rotations.html"><span data-t="full_comparison"></span><svg><use href="#i-arrow"/></svg></a>
             </div>
           </div>
 
@@ -396,10 +389,10 @@
 
   <script src="/vendor/leaflet.js"></script>
   <script src="/vendor/chart.umd.min.js"></script>
-  <script src="/i18n.js?v=20261116"></script>
-  <script src="/terra-extra.js"></script>
-  <script src="/app.js?v=20261116"></script>
-  <script src="/hero.js?v=20261116"></script>
-  <script src="/field.js?v=20261116"></script>
+  <script src="/i18n.js?v=20261121"></script>
+  <script src="/terra-extra.js?v=20261121"></script>
+  <script src="/app.js?v=20261121"></script>
+  <script src="/hero.js?v=20261121"></script>
+  <script src="/field.js?v=20261121"></script>
 </body>
 </html>

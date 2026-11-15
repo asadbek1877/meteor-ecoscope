@@ -1,4 +1,4 @@
-/* TerraShift landing journey: one fixed, full-screen stage with three scenes.
+/* EcoScope landing journey: one fixed, full-screen stage with three scenes.
    Scene 1 space (loop) > scene 2 approach (plays once) > scene 3 surface (plays once, holds the last frame).
    The videos are stacked and cross-dissolved by hero.js; nothing scrolls while the journey is open.
    Videos are never scaled: object-fit: cover only, with the same framing for all three so the seams line up. */
@@ -297,3 +297,23 @@ html.journey-on, html.journey-on body { overflow: hidden; overscroll-behavior: n
   .journey:not([data-scene="1"]) .ui-1 [data-enter] { opacity: 0; }
   .hero-glow, .hero-stars, .hero-copy, .feature-copy { transform: none; }
 }
+
+/* ---------- sound button ---------- */
+.journey-sound {
+  position: absolute; right: clamp(16px, 2.4vw, 34px); bottom: clamp(16px, 2.4vw, 30px); z-index: 6;
+  display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 12px; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .22); background: rgba(10, 16, 30, .62); color: #c9d4e6;
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: border-color .2s ease, color .2s ease, background-color .2s ease, transform .16s cubic-bezier(.2, 0, 0, 1);
+}
+.journey-sound[hidden] { display: none; }
+.journey-sound svg { width: 20px; height: 20px; flex: none; }
+.journey-sound:hover { border-color: rgba(255, 255, 255, .5); color: #fff; }
+.journey-sound:active { transform: scale(.96); }
+.journey-sound:focus-visible { outline: 2px solid #7cc4ff; outline-offset: 3px; }
+.journey-sound .snd-on { display: none; }
+.journey-sound.is-on { border-color: rgba(90, 200, 255, .75); color: #fff; background: rgba(20, 70, 120, .6); }
+.journey-sound.is-on .snd-on { display: inline; }
+.journey-sound.is-on .snd-off { display: none; }
+.journey.is-done .journey-sound { opacity: 0; pointer-events: none; transition: opacity .4s ease; }
+@media (max-width: 640px) { .journey-sound .snd-label { display: none; } .journey-sound { padding: 0 11px; } }

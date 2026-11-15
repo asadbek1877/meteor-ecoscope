@@ -1,5 +1,5 @@
 {
-  "_note": "DRAFT values. Stage lengths, Kc, root depth and depletion fraction p follow FAO-56 (Allen et al., 1998) Tables 11, 12 and 22. sow_doy is only a fallback: the sowing date is computed for each point from its NASA POWER temperatures (or rain onset in the tropics). Heat, frost and season temperature limits are agronomy rules of thumb. revenue_usd_ha is only a fallback: income uses FAOSTAT yield x producer price of the country (backend/data/country_crops.json). Rice percolation (3 mm/day) approximates paddy losses. Mizuki must verify each value and add a source before the demo. Per crop, category groups the crops page filters; t_opt_c (favourable mid-season air temperature) and yield_t_ha (typical irrigated yield) come from the asadbek branch and are reference placeholders to verify.",
+  "_note": "Stage lengths, Kc, root depth and depletion fraction p follow FAO-56 (Allen et al., 1998) Tables 11, 12 and 22. Each crop lists its sources under 'sources'; values marked 'assumption' (heat and frost thresholds, residue class, typical yield, revenue_usd_ha, favourable temperature) are transparent placeholders that an agronomist has not verified yet. Where 'fao_item' is set, the producer price of the country comes from FAOSTAT and replaces revenue_usd_ha.",
   "soils": {
     "light": {
       "awc_mm_per_m": 100,
@@ -107,7 +107,15 @@
       "yield_t_ha": [
         2.6,
         3.4
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "winter_wheat",
@@ -164,7 +172,15 @@
       "yield_t_ha": [
         4.5,
         5.8
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "chickpea",
@@ -215,7 +231,15 @@
       "yield_t_ha": [
         1.2,
         1.8
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "sorghum",
@@ -266,7 +290,15 @@
       "yield_t_ha": [
         3.0,
         4.5
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "mung_bean",
@@ -311,7 +343,15 @@
       "yield_t_ha": [
         1.2,
         1.8
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "alfalfa",
@@ -359,7 +399,15 @@
       "yield_t_ha": [
         10.0,
         14.0
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "assumption"
+      }
     },
     {
       "id": "maize",
@@ -410,7 +458,15 @@
       "yield_t_ha": [
         6.0,
         8.5
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "rice",
@@ -454,7 +510,15 @@
       "fao_item": 27,
       "season_t_min_c": 18,
       "percolation_mm_day": 3.0,
-      "category": "grain"
+      "category": "grain",
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "soybean",
@@ -505,7 +569,15 @@
       "yield_t_ha": [
         2.0,
         2.8
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "spring_wheat",
@@ -548,7 +620,15 @@
       "revenue_usd_ha": 700,
       "fao_item": 15,
       "season_t_min_c": 10,
-      "category": "grain"
+      "category": "grain",
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "barley",
@@ -591,7 +671,15 @@
       "revenue_usd_ha": 650,
       "fao_item": 44,
       "season_t_min_c": 9,
-      "category": "grain"
+      "category": "grain",
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "potato",
@@ -642,7 +730,15 @@
       "yield_t_ha": [
         20.0,
         28.0
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "sunflower",
@@ -693,7 +789,15 @@
       "yield_t_ha": [
         1.8,
         2.6
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "rapeseed",
@@ -742,7 +846,15 @@
         60,
         35
       ],
-      "category": "technical"
+      "category": "technical",
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "groundnut",
@@ -785,7 +897,15 @@
       "revenue_usd_ha": 1400,
       "fao_item": 242,
       "season_t_min_c": 20,
-      "category": "legume"
+      "category": "legume",
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "dry_bean",
@@ -828,7 +948,15 @@
       "revenue_usd_ha": 1100,
       "fao_item": 176,
       "season_t_min_c": 16,
-      "category": "legume"
+      "category": "legume",
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "lentil",
@@ -871,7 +999,15 @@
       "revenue_usd_ha": 900,
       "fao_item": 201,
       "season_t_min_c": 10,
-      "category": "legume"
+      "category": "legume",
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "sugar_beet",
@@ -914,7 +1050,15 @@
       "revenue_usd_ha": 2200,
       "fao_item": 157,
       "season_t_min_c": 10,
-      "category": "technical"
+      "category": "technical",
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "millet",
@@ -957,7 +1101,15 @@
       "revenue_usd_ha": 500,
       "fao_item": 79,
       "season_t_min_c": 20,
-      "category": "grain"
+      "category": "grain",
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "tomato",
@@ -1008,7 +1160,15 @@
       "yield_t_ha": [
         35.0,
         55.0
-      ]
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     },
     {
       "id": "onion",
@@ -1051,7 +1211,310 @@
       "revenue_usd_ha": 4000,
       "fao_item": 403,
       "season_t_min_c": 12,
-      "category": "vegetable"
+      "category": "vegetable",
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
+    },
+    {
+      "id": "watermelon",
+      "name": {
+        "en": "Watermelon",
+        "uz": "Tarvuz"
+      },
+      "family": "cucurbitaceae",
+      "legume": false,
+      "perennial": false,
+      "residue": "low",
+      "sow_doy": 120,
+      "stages": [
+        20,
+        30,
+        30,
+        30
+      ],
+      "kc": [
+        0.4,
+        1.0,
+        0.75
+      ],
+      "root_m": 1.0,
+      "p": 0.4,
+      "sowing": {
+        "kind": "spring",
+        "temp_c": 16
+      },
+      "heat": {
+        "tmax_c": 40,
+        "from_day": 40,
+        "to_day": 85,
+        "limit_days": 12
+      },
+      "frost": {
+        "tmin_c": 0,
+        "first_days": 30
+      },
+      "revenue_usd_ha": 3000,
+      "fao_item": 567,
+      "season_t_min_c": 20,
+      "category": "vegetable",
+      "t_opt_c": [
+        22,
+        30
+      ],
+      "yield_t_ha": [
+        25.0,
+        40.0
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
+    },
+    {
+      "id": "melon",
+      "name": {
+        "en": "Melon",
+        "uz": "Qovun"
+      },
+      "family": "cucurbitaceae",
+      "legume": false,
+      "perennial": false,
+      "residue": "low",
+      "sow_doy": 115,
+      "stages": [
+        25,
+        35,
+        40,
+        20
+      ],
+      "kc": [
+        0.5,
+        0.85,
+        0.6
+      ],
+      "root_m": 1.0,
+      "p": 0.4,
+      "sowing": {
+        "kind": "spring",
+        "temp_c": 15
+      },
+      "heat": {
+        "tmax_c": 40,
+        "from_day": 45,
+        "to_day": 95,
+        "limit_days": 12
+      },
+      "frost": {
+        "tmin_c": 0,
+        "first_days": 30
+      },
+      "revenue_usd_ha": 3200,
+      "fao_item": 568,
+      "season_t_min_c": 20,
+      "category": "vegetable",
+      "t_opt_c": [
+        22,
+        32
+      ],
+      "yield_t_ha": [
+        18.0,
+        30.0
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
+    },
+    {
+      "id": "cucumber",
+      "name": {
+        "en": "Cucumber",
+        "uz": "Bodring"
+      },
+      "family": "cucurbitaceae",
+      "legume": false,
+      "perennial": false,
+      "residue": "low",
+      "sow_doy": 115,
+      "stages": [
+        20,
+        30,
+        40,
+        15
+      ],
+      "kc": [
+        0.6,
+        1.0,
+        0.75
+      ],
+      "root_m": 0.9,
+      "p": 0.5,
+      "sowing": {
+        "kind": "spring",
+        "temp_c": 15
+      },
+      "heat": {
+        "tmax_c": 35,
+        "from_day": 35,
+        "to_day": 85,
+        "limit_days": 10
+      },
+      "frost": {
+        "tmin_c": 0,
+        "first_days": 30
+      },
+      "revenue_usd_ha": 3500,
+      "fao_item": 397,
+      "season_t_min_c": 17,
+      "category": "vegetable",
+      "t_opt_c": [
+        18,
+        28
+      ],
+      "yield_t_ha": [
+        25.0,
+        40.0
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
+    },
+    {
+      "id": "carrot",
+      "name": {
+        "en": "Carrot",
+        "uz": "Sabzi"
+      },
+      "family": "apiaceae",
+      "legume": false,
+      "perennial": false,
+      "residue": "low",
+      "sow_doy": 90,
+      "stages": [
+        20,
+        30,
+        40,
+        20
+      ],
+      "kc": [
+        0.7,
+        1.05,
+        0.95
+      ],
+      "root_m": 0.75,
+      "p": 0.35,
+      "sowing": {
+        "kind": "spring",
+        "temp_c": 8
+      },
+      "heat": {
+        "tmax_c": 32,
+        "from_day": 40,
+        "to_day": 90,
+        "limit_days": 15
+      },
+      "frost": {
+        "tmin_c": -2,
+        "first_days": 30
+      },
+      "revenue_usd_ha": 2500,
+      "fao_item": 426,
+      "season_t_min_c": 12,
+      "category": "vegetable",
+      "t_opt_c": [
+        15,
+        22
+      ],
+      "yield_t_ha": [
+        25.0,
+        40.0
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
+    },
+    {
+      "id": "cabbage",
+      "name": {
+        "en": "Cabbage",
+        "uz": "Karam"
+      },
+      "family": "brassicaceae",
+      "legume": false,
+      "perennial": false,
+      "residue": "low",
+      "sow_doy": 95,
+      "stages": [
+        40,
+        60,
+        50,
+        15
+      ],
+      "kc": [
+        0.7,
+        1.05,
+        0.95
+      ],
+      "root_m": 0.65,
+      "p": 0.45,
+      "sowing": {
+        "kind": "spring",
+        "temp_c": 8
+      },
+      "heat": {
+        "tmax_c": 32,
+        "from_day": 60,
+        "to_day": 140,
+        "limit_days": 15
+      },
+      "frost": {
+        "tmin_c": -3,
+        "first_days": 30
+      },
+      "revenue_usd_ha": 2500,
+      "fao_item": 358,
+      "season_t_min_c": 12,
+      "category": "vegetable",
+      "t_opt_c": [
+        15,
+        22
+      ],
+      "yield_t_ha": [
+        30.0,
+        50.0
+      ],
+      "sources": {
+        "stages_kc_root_p": "FAO-56 (Allen et al., 1998), Tables 11, 12 and 22",
+        "heat_frost_thresholds": "assumption",
+        "residue_class": "assumption",
+        "season_t_min_c": "assumption",
+        "yield_t_ha": "assumption (typical irrigated yield)",
+        "revenue_usd_ha": "FAOSTAT producer price x yield where available, otherwise assumption"
+      }
     }
   ]
 }

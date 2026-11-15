@@ -1,15 +1,18 @@
-/* Dalaviy directional page transitions, shared by every page. Loaded in <head>.
+/* EcoScope directional page transitions, shared by every page. Loaded in <head>.
    Direction comes from the navigation order: going to a page further right, the current page leaves to the
    left and the new one enters from the right; going back, the reverse. It also works for browser back/forward.
 
-   Browsers with cross-document View Transitions (Chrome/Edge 126+): the browser snapshots both pages and
-   transitions.css animates them; the shared header and the active nav pill are captured separately, so the
-   header stays put and the pill glides to its new place. Other browsers: the page slides out, the next page
-   slides in (a shorter, same-direction fallback). Reduced motion: no movement. */
+   One parent-level move per navigation: the browser snapshots the old and the new page and transitions.css
+   slides the two snapshots (transform + opacity only, on the compositor). Nothing inside the page animates
+   while it slides: a page that arrives through a transition is shown whole (html.vt-arrived), and its heavy
+   work (background video, anything waiting on window.dalaviyArrival) starts only when the slide has finished.
+
+   Browsers without cross-document View Transitions, or a transition the browser drops: the page slides in
+   with a CSS animation of the same direction. Reduced motion: no movement. */
 (() => {
   "use strict";
-  const ORDER = ["home", "rotations", "climate", "crops", "sources", "current"];
-  const FILES = { "": "home", "index.html": "home", "rotations.html": "rotations", "climate.html": "climate",
+  const ORDER = ["home", "climate", "crops", "sources", "current"];   /* Hudud, Iqlim, Ekinlar, Hisobotlar (+ current conditions) */
+  const FILES = { "": "home", "index.html": "home", "climate.html": "climate",
     "crops.html": "crops", "sources.html": "sources", "current.html": "current" };
   const pageOf = (href) => {
     try {
@@ -30,12 +33,36 @@
   // A skipped or interrupted transition rejects its promises; that is expected, not an error.
   const quiet = (vt) => ["ready", "finished", "updateCallbackDone"].forEach((k) => { if (vt[k] && vt[k].catch) vt[k].catch(() => {}); });
 
+  // window.dalaviyArrival resolves once the page has arrived: after the slide, or at once when there is none.
+  let arrived;
+  window.dalaviyArrival = new Promise((resolve) => { arrived = resolve; });
+  let settled = false;
+  const settle = () => { if (settled) return; settled = true; root.classList.remove("vt-arriving"); arrived(); };
+  setTimeout(settle, 1200);                   /* whatever happens to the transition events, the page is live by then */
+  const arriving = (dir) => {                 /* the page comes in as one piece: no entrance choreography under the slide */
+    root.classList.add("vt-arriving", "vt-arrived");
+    root.dataset.vtLast = dir;
+    setTimeout(settle, 900);                  /* never leave the page waiting on a transition that went missing */
+  };
+
   const slideIn = (dir, how) => {
+    arriving(dir + (how ? "-" + how : ""));
     root.classList.add("vt-enter", "vt-" + dir);
-    root.dataset.vtLast = dir + (how ? "-" + how : "");
-    const done = () => root.classList.remove("vt-enter", "vt-forward", "vt-back");
+    const done = () => { root.classList.remove("vt-enter", "vt-forward", "vt-back"); settle(); };
     window.addEventListener("animationend", (ev) => { if (ev.target === document.body) done(); }, { once: true });
-    setTimeout(done, 1200);
+    setTimeout(done, 700);
+  };
+  const follow = (vt, dir, how) => {          /* a native transition: tag it with its direction, wait for it to end */
+    quiet(vt);
+    if (!dir || reduce()) { root.dataset.vtLast = "none"; vt.skipTransition(); settle(); return; }
+    arriving(dir + (how ? "-" + how : ""));
+    vt.types.add(dir);
+    vt.finished.then(settle, settle);
+  };
+  const cameFrom = () => {
+    const act = window.navigation && navigation.activation;
+    const from = act && act.from && act.from.url;
+    return from && act.navigationType !== "reload" ? direction(from, location.href) : null;
   };
 
   if (native) {
@@ -48,52 +75,44 @@
       if (dir && !reduce()) e.viewTransition.types.add(dir);
       else e.viewTransition.skipTransition();
     });
-    // New page: same tag, worked out from where we came from (also on back/forward).
+    // New page: same tag, worked out from where we came from (also on back/forward and on a prerendered page).
+    let revealed = false;
     window.addEventListener("pagereveal", (e) => {
-      const act = window.navigation && navigation.activation;
-      const from = act && act.from && act.from.url;
-      const dir = from && act.navigationType !== "reload" && direction(from, location.href);
-      if (!e.viewTransition) {
-        // The browser can drop a cross-document transition (render timeout, a snapshot it cannot take, some
-        // embedded views). The page must still arrive from the right side, so it slides in on its own.
-        if (dir && !reduce()) slideIn(dir, "fallback");
-        return;
-      }
-      quiet(e.viewTransition);
-      root.dataset.vtLast = dir || "none";                 /* lets a test see which way the last move went */
-      if (dir && !reduce()) e.viewTransition.types.add(dir);
-      else e.viewTransition.skipTransition();
+      revealed = true;
+      root.dataset.vtReveal = e.viewTransition ? "vt" : "plain";
+      const dir = cameFrom();
+      if (e.viewTransition) follow(e.viewTransition, dir);
+      else if (dir && !reduce()) slideIn(dir, "fallback");   /* the browser dropped the transition: slide in ourselves */
+      else settle();
     });
-    // Chrome sometimes reveals the page before the listener above sees it ("Page already revealed"). If nothing
-    // handled the arrival by the first frame and no transition is running, slide in here instead.
-    requestAnimationFrame(() => {
-      if (root.dataset.vtLast) return;
-      const act = window.navigation && navigation.activation;
-      const from = act && act.from && act.from.url;
-      const dir = from && act.navigationType !== "reload" && direction(from, location.href);
-      const vt = document.activeViewTransition;
-      if (vt) {                                   /* the transition runs, but untagged: give it its direction */
-        quiet(vt);
-        root.dataset.vtLast = (dir || "none") + "-late";
-        if (dir && !reduce()) vt.types.add(dir); else vt.skipTransition();
-        return;
-      }
-      root.dataset.vtLast = (dir || "none") + "-checked";
-      if (dir && !reduce()) slideIn(dir, "late");
-    });
+    // Chrome sometimes reveals the page before the listener above sees it. If nothing handled the arrival by
+    // the first frame, pick up the running transition or slide in here.
+    const late = () => {
+      if (revealed || settled || root.dataset.vtLast) return;
+      revealed = true;
+      const dir = cameFrom(), vt = document.activeViewTransition;
+      if (vt) follow(vt, dir, "late");
+      else if (dir && !reduce()) slideIn(dir, "late");
+      else settle();
+    };
+    requestAnimationFrame(late);
+    setTimeout(late, 80);                     /* frames may not come at all (a covered window): the clock still checks */
+    // bfcache restore: the page is already whole
+    window.addEventListener("pageshow", (e) => { if (e.persisted) settle(); });
     return;
   }
 
   // ---------- fallback: slide out, navigate, slide in ----------
   const KEY = "dalaviy:nav";
+  let incoming = null;
   try {
     const saved = JSON.parse(sessionStorage.getItem(KEY) || "null");
     sessionStorage.removeItem(KEY);
-    if (saved && Date.now() - saved.at < 5000 && saved.to === location.pathname && !reduce()) {
-      slideIn(saved.dir);
-    }
+    if (saved && Date.now() - saved.at < 5000 && saved.to === location.pathname && !reduce()) incoming = saved.dir;
   } catch { /* storage blocked: no animation */ }
+  if (incoming) slideIn(incoming); else settle();
 
+  let leaving = false;
   document.addEventListener("click", (e) => {
     const a = e.target.closest && e.target.closest("a[href]");
     if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -105,10 +124,12 @@
     if (!dir) return;
     if (reduce()) return;
     e.preventDefault();
+    if (leaving) return;                                     /* a second click during the slide starts nothing new */
+    leaving = true;
     try { sessionStorage.setItem(KEY, JSON.stringify({ dir, to: url.pathname, at: Date.now() })); } catch { /* fine */ }
     root.classList.add("vt-leave", "vt-" + dir);
     setTimeout(() => { location.href = url.href; }, 170);
   });
   // coming back from the bfcache must not leave the page half-faded
-  window.addEventListener("pageshow", (e) => { if (e.persisted) root.classList.remove("vt-leave", "vt-forward", "vt-back"); });
+  window.addEventListener("pageshow", (e) => { if (e.persisted) { leaving = false; root.classList.remove("vt-leave", "vt-forward", "vt-back"); settle(); } });
 })();

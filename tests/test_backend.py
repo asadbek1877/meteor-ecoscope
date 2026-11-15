@@ -753,3 +753,13 @@ def test_nass_units_and_ssurgo_water():
     assert sw["source"] == "ssurgo" and sw["awc_mm_per_m"] == 167
     money = regional.economics("US", None, {"maize": {"t_ha": 13.0, "level": "county", "years": [2021, 2025]}})
     assert money["maize"]["source"] == "nass_county" and money["maize"]["yield_t_ha"] == 13.0
+
+
+def test_crops_expose_season_temperature():
+    """The crops page shows how warm the season is against what the crop needs."""
+    rows = agro.Field(climate.prepare(fake_data())).crops()
+    by = {c["id"]: c for c in rows}
+    assert by["cotton"]["season_t_min_c"] == agro.CROPS["cotton"]["season_t_min_c"]
+    for c in rows:
+        assert "season_t_min_c" in c
+        assert c["recent"]["t_season_c"] is not None and 0 <= c["recent"]["cold_years_share"] <= 1

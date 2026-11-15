@@ -1,4 +1,4 @@
-/* Dalaviy climate page (Iqlim). Builds on field.css (tokens, header, panels, selects, buttons, motion).
+/* EcoScope climate page (Iqlim). Builds on field.css (tokens, header, panels, selects, buttons, motion).
    Desktop follows the 1672 x 941 reference in --u units; below 1100 px the sections stack. */
 
 /* the cloud vortex sits top-centre-right, at its native 16:9 and never past 1920 px */
@@ -182,3 +182,14 @@
 .clim-bottom > [data-reveal]:nth-child(2) { transition-delay: .06s; }
 .clim-bottom > [data-reveal]:nth-child(3) { transition-delay: .12s; }
 .clim-bottom > [data-reveal]:nth-child(4) { transition-delay: .18s; }
+
+/* ---------- data quality and frost ---------- */
+.clim-quality { margin-top: clamp(18px, calc(var(--u) * 24), 28px); }
+.clim-quality[hidden] { display: none; }
+.clim-q-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(max(200px, calc(var(--u) * 250)), 1fr)); gap: 12px; }
+.cq { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(110, 170, 230, .22); background: rgba(10, 28, 48, .55); min-width: 0; }
+.cq-k { color: var(--muted); font-size: max(12px, calc(var(--u) * 13.5)); }
+.cq-v { font-size: max(17px, calc(var(--u) * 22)); font-weight: 650; font-variant-numeric: tabular-nums; color: #fff; }
+.cq-d { color: #9eb0c7; font-size: max(11.5px, calc(var(--u) * 12.5)); line-height: 1.4; }
+.cq-good { border-color: rgba(61, 220, 132, .4); }
+.cq-bad { border-color: rgba(251, 191, 36, .5); }

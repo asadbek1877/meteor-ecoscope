@@ -35,8 +35,8 @@ WARN = {
 }
 
 DISCLAIMER = {
-    "en": "Climate numbers come from NASA POWER on a grid of about 50 km; temperatures are corrected to the height of the field, but rain, wind and sunshine are those of the grid cell, so nearby fields get nearly the same climate. Water need is computed for regional weather; over irrigated land the real value is usually somewhat lower (FAO-56, Annex 6), so use the numbers to compare crops, rotations and periods. Crop thresholds, soil index and income are transparent rules, not measurements or a yield forecast.",
-    "uz": "Iqlim raqamlari NASA POWER'dan, taxminan 50 km to'rda olingan; harorat dala balandligiga tuzatiladi, lekin yog'in, shamol va quyosh nuri katak uchun, shuning uchun yaqin dalalar deyarli bir xil iqlim oladi. Suv ehtiyoji hududiy ob-havo uchun hisoblangan; sug'oriladigan yer ustida haqiqiy qiymat odatda biroz past bo'ladi (FAO-56, 6-ilova), shu sababli raqamlarni ekinlar, rotatsiyalar va davrlarni solishtirish uchun ishlating. Ekin chegaralari, tuproq indeksi va daromad ochiq qoidalar, o'lchov yoki hosil prognozi emas.",
+    "en": "Climate numbers come from NASA POWER on a grid of about 50 km; temperatures are corrected to the height of the field, but rain, wind and sunshine are those of the grid cell, so nearby fields get nearly the same climate. Water need is computed for regional weather; over irrigated land the real value is usually somewhat lower (FAO-56, Annex 6), so use the numbers to compare crops, rotations and periods. Crop thresholds, soil index, prices and income are transparent assumptions, not measurements or a yield forecast; income is gross, before costs. Soil salinity is not modelled. EcoScope is a season and rotation planner: it does not tell you whether to irrigate a field today.",
+    "uz": "Iqlim raqamlari NASA POWER'dan, taxminan 50 km to'rda olingan; harorat dala balandligiga tuzatiladi, lekin yog'in, shamol va quyosh nuri katak uchun, shuning uchun yaqin dalalar deyarli bir xil iqlim oladi. Suv ehtiyoji hududiy ob-havo uchun hisoblangan; sug'oriladigan yer ustida haqiqiy qiymat odatda biroz past bo'ladi (FAO-56, 6-ilova), shu sababli raqamlarni ekinlar, rotatsiyalar va davrlarni solishtirish uchun ishlating. Ekin chegaralari, tuproq indeksi, narxlar va daromad ochiq taxminlar, o'lchov yoki hosil prognozi emas; daromad yalpi, xarajatsiz. Tuproq sho'rlanishi modelda yo'q. EcoScope mavsum va almashlab ekish rejasi uchun: u bugun dalani sug'orish kerakmi, degan savolga javob bermaydi.",
 }
 
 _ADVICE = {
@@ -45,9 +45,12 @@ _ADVICE = {
         "best": "For your priorities, '{best}' scores highest: {score} of 100 against {cur_score} for your current '{cur}'.",
         "best_water_less": "It needs about {m3} m3/ha less water per year ({pct}% less).",
         "best_water_more": "It needs about {m3} m3/ha more water per year ({pct}% more).",
-        "best_income": "Estimated income changes by {usd:+.0f} USD/ha per year.",
+        "best_income": "Estimated gross income (before costs, assumed prices) changes by {usd:+.0f} USD/ha per year.",
+        "trade_off": "Trade-off: {pct}% less water, but about {usd:.0f} USD/ha less gross income per year. Choose by what matters more to you.",
+        "price_robust": "Checked against prices: the choice stays the same when any one crop price is {step}% lower or higher.",
+        "price_flips": "Prices matter here: if {crop} is {change:+d}% in price, '{other}' becomes the best. The prices are assumptions, so check them with your local market.",
         "best_soil": "Soil health index: {a} against {b}.",
-        "stable": "It came first in {wins} of {n} weather years (2011-2025), so the choice is robust.",
+        "stable": "It came first in {wins} of {n} weather years (2011-2025). This only varies the weather; prices, yields and your weights are fixed.",
         "unstable": "It came first in only {wins} of {n} weather years: '{runner}' is close. Treat the two as equal and decide by what matters most to you.",
         "warming": "Average temperature here is {d:+.1f} °C compared with {b0}-{b1} ({trend:+.2f} °C per decade{sig}). If the trend continues, about {proj:.1f} °C by {py} (likely range {lo:.1f} to {hi:.1f}).",
         "rain": "Yearly precipitation changed by {pct:+.0f}% ({base:.0f} to {recent:.0f} mm). Year-to-year differences are large, so this alone is not a reliable trend.",
@@ -71,9 +74,12 @@ _ADVICE = {
         "best": "Sizning ustuvorliklaringiz bo'yicha '{best}' eng yuqori ball oldi: 100 dan {score}, hozirgi '{cur}' esa {cur_score}.",
         "best_water_less": "U yiliga gektariga taxminan {m3} m3 kam suv talab qiladi ({pct}% kam).",
         "best_water_more": "U yiliga gektariga taxminan {m3} m3 ko'p suv talab qiladi ({pct}% ko'p).",
-        "best_income": "Taxminiy daromad yiliga gektariga {usd:+.0f} AQSh dollariga o'zgaradi.",
+        "best_income": "Taxminiy yalpi tushum (xarajatsiz, taxminiy narxlar bilan) yiliga gektariga {usd:+.0f} AQSh dollariga o'zgaradi.",
+        "trade_off": "Tanlov: {pct}% kam suv, lekin yiliga gektariga taxminan {usd:.0f} AQSh dollari kam yalpi tushum. O'zingiz uchun nima muhimroq ekaniga qarab tanlang.",
+        "price_robust": "Narxlar bo'yicha tekshirildi: istalgan bitta ekin narxi {step}% past yoki baland bo'lsa ham tanlov o'zgarmaydi.",
+        "price_flips": "Bu yerda narx muhim: agar {crop} narxi {change:+d}% o'zgarsa, '{other}' eng yaxshi bo'ladi. Narxlar taxmin, mahalliy bozor bilan tekshiring.",
         "best_soil": "Tuproq salomatligi indeksi: {a}, hozirgisida {b}.",
-        "stable": "U {n} ta ob-havo yilining (2011-2025) {wins} tasida birinchi bo'ldi, ya'ni tanlov barqaror.",
+        "stable": "U {n} ta ob-havo yilining (2011-2025) {wins} tasida birinchi bo'ldi. Bu faqat ob-havo o'zgaruvchanligi bo'yicha; narx, hosil va sizning ustuvorliklaringiz o'zgarmas olingan.",
         "unstable": "U {n} ta ob-havo yilining faqat {wins} tasida birinchi bo'ldi: '{runner}' unga yaqin. Ikkalasini teng deb hisoblab, o'zingiz uchun muhimiga qarab tanlang.",
         "warming": "Bu yerda o'rtacha harorat {b0}-{b1} yillarga nisbatan {d:+.1f} °C ga o'zgargan (har o'n yilda {trend:+.2f} °C{sig}). Trend davom etsa, {py} yilga borib taxminan {proj:.1f} °C (ehtimoliy oraliq {lo:.1f} dan {hi:.1f} gacha).",
         "rain": "Yillik yog'in {pct:+.0f}% ga o'zgargan ({base:.0f} dan {recent:.0f} mm ga). Yillar orasidagi farq katta, shuning uchun buning o'zi ishonchli trend emas.",
@@ -129,6 +135,9 @@ def advice(lang: str, climate: dict, crops: list, rotations: dict, now: dict) ->
             vs = best["vs_current"]
             parts = [t["best"].format(best=name(best), score=best["scores"]["total"],
                                       cur=name(cur), cur_score=cur["scores"]["total"])]
+            # a recommendation that saves water but earns less says so first, in plain numbers
+            if vs["water_pct"] and vs["water_m3_ha"] >= 100 and vs["income_usd_ha"] <= -50:
+                parts.append(t["trade_off"].format(pct=abs(vs["water_pct"]), usd=-vs["income_usd_ha"]))
             if vs["water_pct"] is None:
                 pass  # current rotation needs no irrigation water, so a percentage has no meaning
             elif vs["water_m3_ha"] >= 100:
@@ -143,6 +152,14 @@ def advice(lang: str, climate: dict, crops: list, rotations: dict, now: dict) ->
             add("rotation", "info", t["stable"].format(wins=best["wins"], n=n))
         else:
             add("rotation", "warning", t["unstable"].format(wins=best["wins"], n=n, runner=name(runner)))
+        pc = rotations.get("price_check")
+        if pc and pc["robust"]:
+            add("rotation", "info", t["price_robust"].format(step=pc["step_pct"]))
+        elif pc and pc["flips"]:
+            f = pc["flips"][0]
+            other = next((it for it in items if it["id"] == f["best_id"]), None)
+            add("rotation", "warning", t["price_flips"].format(crop=f["name"].get(lang, f["name"]["en"]), change=f["change_pct"],
+                                                               other=name(other) if other else f["best_id"]))
 
     # 2. climate shift
     s = climate["shift"]

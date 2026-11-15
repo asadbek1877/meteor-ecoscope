@@ -1,4 +1,4 @@
-/* Dalaviy Liquid Glass — the material system for every dashboard page (load after field.css).
+/* EcoScope Liquid Glass — the material system for every dashboard page (load after field.css).
 
    Principles taken from Apple's Liquid Glass guidance (HIG Materials, "Adopting Liquid Glass", WWDC25):
    - Glass is a functional layer that floats above content: navigation, controls, popovers, modals.
@@ -13,7 +13,7 @@
      .glass-modal  .glass-interactive  .glass-panel-subtle                                        */
 
 :root {
-  /* tint of the material (Dalaviy navy) and how much of the background shows through */
+  /* tint of the material (EcoScope navy) and how much of the background shows through */
   --glass-rgb: 16, 30, 56;
   --glass-a-nav: .52;
   --glass-a-control: .46;

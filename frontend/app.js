@@ -1,14 +1,17 @@
-/* TerraShift site. One page, no build step: Leaflet for the map, Chart.js for charts. */
+/* EcoScope site. One page, no build step: Leaflet for the map, Chart.js for charts. */
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
   const on = (id, event, handler) => { const el = $(id); if (el) el.addEventListener(event, handler); };
-  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  /* Uzbek Latin on screen: o‘ and g‘ with the turned comma, the tutuq belgisi as ’, whatever form the source text used
+     (the translations, crop names and advice from the server mix ', ʻ and ‘). Only Uzbek text is touched. */
+  const uzFix = (s) => s.replace(/([oOgG])['ʻ‘`’]/g, "$1‘").replace(/(\p{L})['ʼ](\p{L})/gu, "$1’$2");
+  const esc = (s) => (state.lang === "uz" ? uzFix(String(s ?? "")) : String(s ?? "")).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   // ---------- state ----------
   const saved = (() => { try { return JSON.parse(localStorage.getItem("terrashift") || "{}"); } catch { return {}; } })();
   const state = Object.assign({
-    lat: 40.1158, lon: 67.8422, lang: "uz", soil: "auto", irrigation: "furrow", current: null,
+    lat: 40.4, lon: 67.95, lang: "uz", soil: "auto", irrigation: "furrow", current: null,
     customYears: [["cotton", ""], ["winter_wheat", ""]],
     weights: { water: 40, income: 20, soil: 20, risk: 20 }, layer: "", opacity: 70, metric: "t_mean", locationLabel: "", period: "",
     field: { name: "", polygon: null, area_ha: null }, mode: "auto", manual: null, autoCurrent: null,
@@ -27,9 +30,10 @@
   const t = (key, vars) => {
     let s = (window.I18N[state.lang] || window.I18N.en)[key] ?? window.I18N.en[key] ?? key;
     if (vars && typeof s === "string") for (const k in vars) s = s.replaceAll(`{${k}}`, vars[k]);
+    if (state.lang === "uz") s = typeof s === "string" ? uzFix(s) : Array.isArray(s) ? s.map((x) => (typeof x === "string" ? uzFix(x) : x)) : s;
     return s;
   };
-  const name = (obj) => (obj && obj.name ? (obj.name[state.lang] || obj.name.en) : "");
+  const name = (obj) => (obj && obj.name ? (state.lang === "uz" ? uzFix(obj.name.uz || obj.name.en) : (obj.name[state.lang] || obj.name.en)) : "");
   const title = (obj) => (obj && obj.title ? (obj.title[state.lang] || obj.title.en) : "");
   const fmt = (n, digits = 0) => {
     if (n === null || n === undefined || Number.isNaN(n)) return "–";
@@ -159,6 +163,12 @@
     state.lon = Math.round((((lon + 180) % 360 + 360) % 360 - 180) * 1e4) / 1e4;  // wrap any world copy to -180..180
     state.locationLabel = locationLabel;
     marker.setLatLng([state.lat, state.lon]);
+    if (!keepPlaceArea) clearPlaceArea();
+    paintPin();                                              /* the colour belongs to the previous point until the new check arrives */
+    {
+      const pin = marker.getElement && marker.getElement() && marker.getElement().querySelector(".pin");
+      if (pin) { delete pin.dataset.status; pin.removeAttribute("title"); }
+    }
     if (recenter) map.setView([state.lat, state.lon], Math.max(map.getZoom(), 8));
     $("coords").textContent = `${state.lat.toFixed(4)}, ${state.lon.toFixed(4)}`;
     if ($("place-search")) $("place-search").value = locationLabel;
@@ -452,10 +462,11 @@
     activePlaceIndex = -1;
   }
 
-  function renderPlaceResults(features) {
+  function renderPlaceResults(features, rows) {
     const list = $("place-results");
     if (!list) return;
-    placeResults = features.map((feature) => {
+    placeResults = features.map((feature, idx) => {
+      const row = (rows && rows[idx]) || {};
       const properties = feature.properties || {};
       const primary = placeName(properties);
       const context = placeContext(properties, primary);
@@ -466,6 +477,8 @@
         label: [primary, context].filter(Boolean).join(", "),
         lon: Number(coordinates && coordinates[0]),
         lat: Number(coordinates && coordinates[1]),
+        bbox: Array.isArray(row.bbox) ? row.bbox.map(Number) : null,   /* [south, west, north, east] */
+        outline: row.outline || null,                                    /* GeoJSON border of a region or country */
       };
     }).filter((place) => place.primary && Number.isFinite(place.lat) && Number.isFinite(place.lon)
       && place.lat >= -90 && place.lat <= 90 && place.lon >= -180 && place.lon <= 180);
@@ -496,7 +509,7 @@
       if (!response.ok) throw new Error(`Place search failed (${response.status})`);
       const result = await response.json();
       if (placeController !== requestController) return;
-      renderPlaceResults(Array.isArray(result.features) ? result.features : []);
+      renderPlaceResults(Array.isArray(result.features) ? result.features : [], Array.isArray(result.results) ? result.results : []);
     } catch (err) {
       if (err.name === "AbortError") return;
       if (placeController === requestController) {
@@ -514,7 +527,11 @@
     $("place-search").value = place.label;
     $("place-search-status").textContent = "";
     hidePlaceResults();
-    setPoint(place.lat, place.lon, true, place.label);
+    const area = !!(place.bbox || place.outline);
+    keepPlaceArea = true;
+    setPoint(place.lat, place.lon, !area, place.label);
+    keepPlaceArea = false;
+    if (area) showPlaceArea(place); else clearPlaceArea();
   }
 
   function updateActivePlace(index) {
@@ -609,6 +626,7 @@
       $("clim-findings").innerHTML = `<li class="is-empty">${esc(t("no_data_sub"))}</li>`;
       $("clim-advice-text").textContent = t("no_data_sub");
       $("clim-advice-why").textContent = "";
+      if ($("clim-quality")) $("clim-quality").closest(".clim-quality").hidden = true;
       return;
     }
     CLIM_CARDS.forEach(([id, key]) => {
@@ -624,6 +642,7 @@
     renderClimGauge();
     renderClimFindings();
     renderClimAdvice();
+    renderClimQuality();
   }
 
   // today's forecast (live, Open-Meteo) in the top-right corner
@@ -781,6 +800,79 @@
     $("clim-gauge").title = t("clim_gauge_note", { now: fmt(sh.recent, 2) });
   }
 
+  // ---------- what the backend computes and the pages did not show yet ----------
+  // Where a rotation came from: what farmers usually grow here, what fits the area, what the analysis proposes, a sample.
+  const ORIGINS = ["typical", "local", "suggested", "reference"];
+  const originTag = (it) => (ORIGINS.includes(it.origin)
+    ? `<span class="tag tag-origin tag-origin-${it.origin}" title="${esc(t("origin_" + it.origin + "_tip"))}">${esc(t("origin_" + it.origin))}</span>` : "");
+
+  // The map pin takes the colour of the land check: green = suitable, amber = limited, red = unsuitable.
+  function paintPin() {
+    const el = marker && marker.getElement && marker.getElement();
+    const pin = el && el.querySelector(".pin");
+    if (!pin) return;
+    const st = data && data.suitability ? data.suitability.status : "";
+    if (["ok", "limited", "unsuitable"].includes(st)) { pin.dataset.status = st; pin.title = t("pin_" + st); }
+    else { delete pin.dataset.status; pin.removeAttribute("title"); }
+  }
+
+  // A searched country, region or town: its border is drawn and the map zooms to show all of it.
+  let placeLayer = null, keepPlaceArea = false;
+  function clearPlaceArea() { if (placeLayer && map) map.removeLayer(placeLayer); placeLayer = null; }
+  function showPlaceArea(place) {
+    clearPlaceArea();
+    if (!map) return;
+    if (place.outline) {
+      placeLayer = L.geoJSON(place.outline, { interactive: false,
+        style: { color: "#3ec5ff", weight: 2, opacity: .9, dashArray: "6 5", fillColor: "#3ec5ff", fillOpacity: .07 } }).addTo(map);
+    }
+    const b = place.bbox;
+    if (Array.isArray(b) && b.length === 4 && b.every(Number.isFinite) && (b[2] - b[0] > 0.002 || b[3] - b[1] > 0.002)) {
+      map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: [24, 24], maxZoom: 14, animate: !reduceMotion.matches });
+    }
+  }
+
+  // Crops: a crop that needs a warm season is flagged where the season was too cool in some years.
+  const seasonCold = (c) => c.season_t_min_c !== null && c.season_t_min_c !== undefined && c.recent.t_season_c !== null && c.recent.t_season_c !== undefined
+    && (c.recent.t_season_c < c.season_t_min_c || (c.recent.cold_years_share || 0) >= 0.1);
+  const coldFlag = (c) => (seasonCold(c)
+    ? `<span class="ct-flag" title="${esc(t("crop_tip_season_cold", { t: fmt(c.recent.t_season_c, 1), min: c.season_t_min_c, pct: Math.round((c.recent.cold_years_share || 0) * 100) }))}">${icon("i-thermo")}</span>` : "");
+
+  // Climate page: how good the data is, and how the frost dates moved.
+  function renderClimQuality() {
+    const box = $("clim-quality");
+    if (!box) return;
+    const c = data.climate, q = c && c.data_quality, f = c && c.frost;
+    const tiles = [];
+    const tile = (k, v, d, tone) => tiles.push(`<div class="cq${tone ? " cq-" + tone : ""}"><span class="cq-k">${esc(k)}</span><b class="cq-v">${esc(v)}</b><span class="cq-d">${esc(d || "")}</span></div>`);
+    if (f && f.recent && f.baseline) {
+      const sh = f.last_frost_shift_days;
+      tile(t("q_last_frost"), f.recent.last_spring_frost ? md(f.recent.last_spring_frost) : "–",
+        t("q_last_frost_d", { a: f.baseline.last_spring_frost ? md(f.baseline.last_spring_frost) : "–", d: sh === null || sh === undefined ? "–" : sgn(sh) }),
+        sh < -1 ? "good" : sh > 1 ? "bad" : "");
+      tile(t("q_frost_free"), `${fmt(f.recent.frost_free_days)} ${t("unit_days")}`,
+        t("q_frost_free_d", { a: fmt(f.baseline.frost_free_days), d: f.frost_free_change_days === null || f.frost_free_change_days === undefined ? "–" : sgn(f.frost_free_change_days) }),
+        f.frost_free_change_days > 1 ? "good" : f.frost_free_change_days < -1 ? "bad" : "");
+      tile(t("q_first_frost"), f.recent.first_autumn_frost ? md(f.recent.first_autumn_frost) : "–",
+        t("q_first_frost_d", { a: f.baseline.first_autumn_frost ? md(f.baseline.first_autumn_frost) : "–" }));
+    }
+    if (q) {
+      const corr = q.temperature_correction_c && q.temperature_correction_c.mean;
+      tile(t("q_elev"), corr === null || corr === undefined || Math.abs(corr) < 0.05 ? t("q_elev_none") : `${sgn(corr, 1)} °C`,
+        t("q_elev_d", { pt: fmt(q.elevation_m), grid: fmt(q.grid_elevation_m) }));
+      tile(t("q_days"), `${fmt(q.days)} ${t("unit_days")}`,
+        q.filled_days ? t("q_days_filled", { n: fmt(q.filled_days), d: q.last_day ? isoDay(q.last_day) : "–" }) : t("q_days_full", { d: q.last_day ? isoDay(q.last_day) : "–" }),
+        q.filled_days > q.days * 0.02 ? "bad" : "");
+    }
+    const m = c && c.et0_method;
+    if (m) {
+      const pct = Math.round((m.penman_monteith_share || 0) * 100);
+      tile(t("q_et0"), `${pct}%`, pct >= 99 ? m.name : t("q_et0_part", { name: m.name }), pct < 80 ? "bad" : "");
+    }
+    box.innerHTML = tiles.join("");
+    box.closest(".clim-quality").hidden = !tiles.length;
+  }
+
   function renderClimFindings() {
     const c = data.climate;
     $("clim-findings").innerHTML = ["t_mean", "precip_mm", "et0_mm", "hot_days"].filter((k) => c.shift[k]).map((k) => {
@@ -909,15 +1001,18 @@
     if ($("coords")) $("coords").textContent = `${state.lat.toFixed(4)}, ${state.lon.toFixed(4)}`;
     if ($("warnings")) $("warnings").innerHTML = data.warnings.map((w) => alertHtml(w.severity, w.text)).join("");
     renderChips();
+    paintPin();
     if ($("layer") && JSON.stringify(data.map_layers.map((l) => l.id)) !== JSON.stringify(layers.map((l) => l.id))) {
       layers = data.map_layers; renderLayerSelect();
     }
     renderSoilNote();
     const ok = !!(data.rotations && data.rotations.items && data.rotations.items.length
       && data.rotations.items.some((it) => it.id === data.rotations.best_id));
+    const unsuitable = data.suitability && data.suitability.status === "unsuitable";
     if (!ok) {
-      if ($("verdict")) $("verdict").textContent = t("no_data_title");
-      if ($("verdict-sub")) $("verdict-sub").textContent = t("no_data_sub");
+      /* a building, water or ice at the point is not a data failure: say why crops cannot grow here */
+      if ($("verdict")) $("verdict").textContent = unsuitable && data.suitability.headline ? (state.lang === "uz" ? uzFix(data.suitability.headline) : data.suitability.headline) : t("no_data_title");
+      if ($("verdict-sub")) $("verdict-sub").textContent = t(unsuitable ? "verdict_unsuitable" : "no_data_sub");
       if ($("advice-top")) $("advice-top").innerHTML = "";
     } else if ($("verdict") || $("verdict-sub") || $("advice-top")) renderVerdict();
     if ($("rot-list")) renderDashboard(ok);
@@ -928,6 +1023,7 @@
       if ($("now-card")) renderNow();
     }
     if ($("datasets")) renderSources();
+    if ($("rep-summary")) renderReport();
   }
 
   function renderChips() {
@@ -1022,6 +1118,7 @@
         it.id === r.best_id ? `<span class="badge best">${esc(t("badge_best"))}</span>` : "",
         it.is_current ? `<span class="badge">${esc(t("badge_current"))}</span>` : "",
         it.conflicts.length ? `<span class="badge bad">${esc(t("badge_conflict"))}</span>` : "",
+        originTag(it),
       ].join("");
       const seq = it.years.map((slot, i) => `<span><b>${esc(t("year_n", { n: i + 1 }))}:</b> ${slot.map((c) => esc(name(c))).join(" + ")}</span>`).join("");
       return `
@@ -1144,7 +1241,8 @@
     document.querySelector(".dash").classList.toggle("is-demo", !!data.demo);
     if ($("dash-demo")) $("dash-demo").hidden = !data.demo;
     if (!ok) {
-      $("rot-list").innerHTML = `<div class="dash-error" role="status"><b>${esc(t("no_data_title"))}</b><p>${esc(t("no_data_sub"))}</p>
+      const unfit = data.suitability && data.suitability.status === "unsuitable";
+      $("rot-list").innerHTML = `<div class="dash-error" role="status"><b>${esc(unfit && data.suitability.headline ? data.suitability.headline : t("no_data_title"))}</b><p>${esc(t(unfit ? "verdict_unsuitable" : "no_data_sub"))}</p>
         <div class="dash-error-actions"><button type="button" class="dash-btn dash-btn-primary" data-retry>${esc(t("err_retry"))}</button>
         <button type="button" class="dash-btn dash-btn-secondary" data-demo>${esc(t("demo_btn"))}</button></div></div>`;
       ["m-total", "m-water", "m-soil-gain", "m-income", "m-soil"].forEach((id) => setMetric(id, "–"));
@@ -1183,6 +1281,7 @@
         isBest ? `<span class="tag tag-best">${esc(t("badge_best"))}</span>` : "",
         it.is_current ? `<span class="tag tag-current">${esc(t("badge_current"))}</span>` : "",
         it.conflicts.length ? `<span class="tag tag-bad">${esc(t("badge_conflict"))}</span>` : "",
+        originTag(it),
       ].join("");
       return `
       <article class="rot-row${isBest ? " is-best" : ""}" data-rot="${esc(it.id)}" style="--i: ${i}">
@@ -1304,7 +1403,7 @@
     }
     (data.advice || []).filter((a) => a.severity === "warning" || a.severity === "critical").slice(0, 3).forEach((a, i) => {
       items.push({ key: `adv|${a.group}|${a.severity}|${i}`, cat: a.severity === "critical" ? "alert" : "advice", icon: "i-bell", source: t("nw_model"), date: fetched,
-        href: { climate: "/climate.html", crops: "/crops.html", rotation: "/rotations.html", now: "/current.html" }[a.group] || "/sources.html",
+        href: { climate: "/climate.html", crops: "/crops.html", rotation: "/#app", now: "/current.html" }[a.group] || "/sources.html",
         title: t(a.severity === "critical" ? "nw_alert_title" : "nw_advice_title"), text: a.text });
     });
     (data.warnings || []).filter((w) => w.severity !== "info").slice(0, 2).forEach((w, i) => {
@@ -1363,7 +1462,7 @@
     ds.push(row(t("basis_model"), esc(t("basis_model_text")), "estimate"));
     if (f.polygon) ds.push(row(t("basis_area"), esc(t("basis_area_text")), "estimate"));
     $("basis-sources").innerHTML = ds.join("");
-    $("basis-disclaimer").textContent = data.disclaimer || "";
+    $("basis-disclaimer").textContent = state.lang === "uz" ? uzFix(data.disclaimer || "") : data.disclaimer || "";
   }
 
   function renderScoresChart(r) {
@@ -1501,7 +1600,7 @@
         const fit = fitOf(c), r = c.recent;
         return `<div class="ct-row${best && c.id === best.id ? " is-best" : ""}${c.id === state.cropSel ? " is-selected" : ""}" role="row" tabindex="0"
             data-crop="${esc(c.id)}" style="--i:${i}" aria-label="${esc(t("crop_row_aria", { crop: name(c), fit: fit ?? "–" }))}">
-          <span class="ct-crop" role="cell"><img src="${cropImg(c.id)}" alt="" width="54" height="54" loading="${i < 3 ? "eager" : "lazy"}" decoding="async"><b>${esc(name(c))}</b></span>
+          <span class="ct-crop" role="cell"><img src="${cropImg(c.id)}" alt="" width="54" height="54" loading="${i < 3 ? "eager" : "lazy"}" decoding="async"><b>${esc(name(c))}</b>${coldFlag(c)}</span>
           <span class="ct-cell" role="cell" title="${esc(t("crop_sow_tip", { a: md(c.season.sow), b: md(c.season.harvest), d: c.season.days }))}"><svg><use href="#i-calendar"/></svg>${esc(monthsOf(c))}</span>
           <span class="ct-cell" role="cell" title="${esc(t("crop_water_tip", { need: fmt(r.water_need_mm), rain: fmt(r.rain_mm), net: fmt(r.irrigation_mm.p50) }))}"><svg class="i-water"><use href="#i-drop"/></svg>${fmt(r.irrigation_mm.p50)} mm</span>
           <span class="ct-cell" role="cell" title="${esc(c.yield_t_ha ? t("crop_yield_tip", { a: tUnit(c.yield_t_ha.typical[0]), b: tUnit(c.yield_t_ha.typical[1]) }) : "")}"><svg class="i-yield"><use href="#i-coins"/></svg>${esc(yieldText(c.yield_t_ha))}</span>
@@ -1598,7 +1697,15 @@
     if (r.frost_years_share >= 0.1) tips.push({ warn: true, text: t("crop_tip_frost", { pct: Math.round(r.frost_years_share * 100) }) });
     tips.push({ warn: c.water_level === "high", text: t("crop_tip_water", { n: r.irrigations, m3: fmt(r.irrigation_m3_ha.p50), irr: name(options && options.irrigation.find((x) => x.id === state.irrigation)) || state.irrigation }) });
     if (c.sowing && Math.abs(c.sowing.shift_days) >= 3) tips.push({ text: t("crop_tip_sow", { a: md(c.sowing.baseline), b: md(c.sowing.recent), d: sgn(c.sowing.shift_days) }) });
+    if (c.season_t_min_c !== null && c.season_t_min_c !== undefined && r.t_season_c !== null && r.t_season_c !== undefined) {
+      tips.push(seasonCold(c)
+        ? { warn: true, text: t("crop_tip_season_cold", { t: fmt(r.t_season_c, 1), min: c.season_t_min_c, pct: Math.round((r.cold_years_share || 0) * 100) }) }
+        : { text: t("crop_tip_season_ok", { t: fmt(r.t_season_c, 1), min: c.season_t_min_c }) });
+    }
     if (c.legume) tips.push({ text: t("crop_tip_legume") });
+    const seasonStats = r.t_season_c === null || r.t_season_c === undefined ? ""
+      : stat("crop_t_season", `${fmt(r.t_season_c, 1)} °C`, c.season_t_min_c ? t("crop_t_season_need", { t: c.season_t_min_c }) : "")
+        + (c.season_t_min_c ? stat("crop_cold_years", `${Math.round((r.cold_years_share || 0) * 100)} %`, t("crop_cold_years_d")) : "");
     $("crop-dialog-body").innerHTML = `
       <div class="cd-head">
         <img src="${cropImg(c.id)}" alt="" width="96" height="96">
@@ -1615,6 +1722,7 @@
         ${stat("th_heat", `${fmt(r.heat_days.p50)} ${t("unit_days")}`, t("heat_rule", { thr: c.heat_rule.tmax_c }))}
         ${stat("crop_frost", `${Math.round(r.frost_years_share * 100)} %`, base ? t("before_now", { a: Math.round(base.frost_years_share * 100) + "%", b: Math.round(r.frost_years_share * 100) + "%" }) : "")}
         ${stat("th_gross", `${fmt(r.irrigation_m3_ha.p50)} ${t("m3ha")}`, t("irrigations", { n: r.irrigations }))}
+        ${seasonStats}
       </dl>
       <h3>${esc(t("crop_fit_parts"))}</h3>
       <div class="cd-parts">${parts}</div>
@@ -1622,7 +1730,6 @@
       <ul class="cd-advice">${tips.map((x) => `<li class="${x.warn ? "is-warn" : ""}">${esc(x.text)}</li>`).join("")}</ul>
       <p class="cd-note">${esc(t("crop_dialog_note", { a: p.recent[0], b: p.recent[1] }))}${data.demo ? " " + esc(t("demo_note")) : ""}</p>
       <div class="cd-actions">
-        <a class="dash-btn dash-btn-secondary" href="/rotations.html">${esc(t("crop_to_rot"))}</a>
         <button type="button" class="dash-btn dash-btn-primary" data-close-dialog>${esc(t("close"))}</button>
       </div>`;
     if (!dlg.open) dlg.showModal();
@@ -1673,7 +1780,8 @@
     $("now-meta").textContent = rec ? t("now_meta", { date: isoDay(rec.as_of) }) : "";
     const tiles = [];
     if (rec) {
-      tiles.push([t("n_rain30"), `${fmt(rec.rain_mm, 1)} mm`, rec.rain_normal_mm ? t("n_normal", { a: fmt(rec.rain_normal_mm.p10), b: fmt(rec.rain_normal_mm.p90) }) : ""]);
+      tiles.push([t("n_rain30"), `${fmt(rec.rain_mm, 1)} mm`, (rec.rain_normal_mm ? t("n_normal", { a: fmt(rec.rain_normal_mm.p10), b: fmt(rec.rain_normal_mm.p90) }) : "")
+        + (rec.rain_percentile !== null && rec.rain_percentile !== undefined ? (rec.rain_normal_mm ? " · " : "") + t("n_rain_pct", { pct: Math.round(rec.rain_percentile) }) : "")]);
       tiles.push([t("n_et30"), `${fmt(rec.et0_mm)} mm`, t("n_balance", { v: sgn(rec.balance_mm) })]);
       tiles.push([t("n_since"), t("n_days", { n: rec.days_since_rain ?? "–" }), ""]);
     }
@@ -1699,8 +1807,142 @@
     const basis = n.week_basis ? t("week_basis_" + n.week_basis.source) : "";
     $("week").innerHTML = `<h3>${esc(t("week_title"))}${basis ? " · " + esc(basis) : ""}</h3>` + (n.week.length
       ? `<ul class="plain">${n.week.map((w) => `<li>${esc(t("week_row", { crop: name(w), need: fmt(w.need_mm, 1), net: fmt(w.net_mm, 1), m3: fmt(w.m3_ha) }))}</li>`).join("")}</ul>`
-      : `<p class="hint">${esc(t("week_none"))}</p>`);
+      : `<p class="hint">${esc(t("week_none"))}</p>`) + `<p class="hint week-scope">${esc(t("week_scope"))}</p>`;
     $("advice-now").innerHTML = adviceHtml("now");
+  }
+
+  // ---------- Hisobotlar: one report for the selected place ----------
+  // Everything comes from the same /api/analyze answer; nothing is estimated here. Each claim names its source and period.
+  const SUIT_TONE = { ok: "good", limited: "warn", unsuitable: "bad" };
+  function renderReport() {
+    const c = data.climate, p = data.periods, s = data.suitability, q = c && c.data_quality;
+    const place = (s && s.land && s.land.place) ? s.land.place.split(",").slice(0, 3).join(",") : `${fmt(state.lat, 4)}, ${fmt(state.lon, 4)}`;
+    const today = new Date().toISOString().slice(0, 10);
+    $("rep-meta").textContent = t("rep_meta", { place, a: p.baseline[0], b: p.recent[1], date: isoDay(today), src: t(data.demo ? "rep_src_demo" : "rep_src_" + (data.source === "live" ? "live" : "saved")) });
+
+    // B. summary: four facts, each with what it means
+    const tiles = [];
+    const tile = (k, v, d, tone) => tiles.push(`<div class="rep-tile${tone ? " is-" + tone : ""}"><span class="rt-k">${esc(k)}</span><b class="rt-v">${esc(v)}</b><span class="rt-d">${esc(d)}</span></div>`);
+    if (s) tile(t("rs_land"), t("rs_land_" + s.status), t("rs_land_note_" + s.status), SUIT_TONE[s.status]);
+    const tm = c && c.shift.t_mean;
+    if (tm && tm.delta !== null) tile(t("rs_temp"), `${sgn(tm.delta, 1)} °C`, t("rs_temp_note", { a: `${p.baseline[0]}–${p.baseline[1]}`, b: `${p.recent[0]}–${p.recent[1]}`, sig: t(tm.trend_significant ? "rs_sig_yes" : "rs_sig_no") }), tm.delta > 0.1 ? "warn" : "");
+    const pr = c && c.shift.precip_mm, et = c && c.shift.et0_mm;
+    if (pr && et) tile(t("rs_water"), `${fmt(pr.recent)} / ${fmt(et.recent)} mm`, t("rs_water_note", { gap: fmt(Math.max(0, et.recent - pr.recent)) }), et.recent > 2 * pr.recent ? "warn" : "");
+    const r = data.rotations;
+    const best = r && r.items && r.items.find((it) => it.id === r.best_id);
+    if (best) {
+      const vs = best.vs_current;
+      tile(t("rs_best"), name(best), vs && vs.water_pct ? t(vs.water_m3_ha > 0 ? "rs_best_less" : "rs_best_more", { pct: Math.abs(vs.water_pct) }) : t("rs_best_same"), "good");
+    } else if (data.crops && data.crops.length) {
+      const top = data.crops.slice().sort((a, b) => (fitOf(b) ?? -1) - (fitOf(a) ?? -1))[0];
+      tile(t("rs_best_crop"), name(top), t("rs_best_crop_note", { x: fitOf(top) ?? "–" }), "good");
+    }
+    $("rep-summary").innerHTML = tiles.join("") || `<p class="hint">${esc(t("no_data_sub"))}</p>`;
+
+    // C. key results
+    const years = c ? c.annual.map((a) => a.year) : [];
+    const src = (k) => t(k, { a: years[0] || "–", b: years[years.length - 1] || "–" });
+    if (tm && c) {
+      const key = Math.abs(tm.delta) < 0.1 ? "rr_temp_flat" : tm.delta > 0 ? "rr_temp_up" : "rr_temp_down";
+      $("rr-temp-claim").textContent = t(key, { a: fmt(tm.baseline, 1), b: fmt(tm.recent, 1), d: sgn(tm.delta, 1) });
+      $("rr-temp-src").textContent = src("rr_src_power");
+      const trend = (tm.trend_line || []).map((x) => ({ x: x.year, y: x.value }));
+      chart("rr-temp-chart", { type: "line", data: { datasets: [
+        { label: t("rr_ds_temp"), data: c.annual.filter((a) => a.t_mean !== null).map((a) => ({ x: a.year, y: a.t_mean })), borderColor: "#fb7185", backgroundColor: "#fb7185", borderWidth: 2, pointRadius: 0, tension: 0.25 },
+        { label: t("rr_ds_trend"), data: trend, borderColor: "#fcd34d", borderWidth: 1.5, borderDash: [6, 5], pointRadius: 0 },
+      ] }, options: reportOptions("°C") });
+    }
+    if (pr && et && c) {
+      $("rr-water-claim").textContent = t("rr_water_claim", { rain: fmt(pr.recent), et0: fmt(et.recent), gap: fmt(Math.max(0, et.recent - pr.recent)) });
+      $("rr-water-src").textContent = src("rr_src_water");
+      chart("rr-water-chart", { type: "bar", data: { datasets: [
+        { type: "bar", label: t("rr_ds_rain"), data: c.annual.filter((a) => a.precip_mm !== null).map((a) => ({ x: a.year, y: a.precip_mm })), backgroundColor: "rgba(62,197,255,.55)", borderWidth: 0 },
+        { type: "line", label: t("rr_ds_et0"), data: c.annual.filter((a) => a.et0_mm !== null).map((a) => ({ x: a.year, y: a.et0_mm })), borderColor: "#fbbf24", backgroundColor: "#fbbf24", borderWidth: 2, pointRadius: 0, tension: 0.25 },
+      ] }, options: reportOptions("mm") });
+    }
+    const crops = (data.crops || []).filter((x) => fitOf(x) !== null).sort((a, b) => fitOf(b) - fitOf(a)).slice(0, 8);
+    $("rr-crops-chart").closest(".rep-result").hidden = !crops.length;
+    if (crops.length) {
+      const [a, b] = crops;
+      $("rr-crops-claim").textContent = b ? t("rr_crops_claim2", { a: name(a), x: fitOf(a), b: name(b), y: fitOf(b) }) : t("rr_crops_claim1", { a: name(a), x: fitOf(a) });
+      $("rr-crops-src").textContent = t("rr_src_crops", { a: p.recent[0], b: p.recent[1] });
+      chart("rr-crops-chart", { type: "bar", data: { labels: crops.map(name), datasets: [
+        { label: t("crop_th_fit"), data: crops.map(fitOf), backgroundColor: crops.map((x, i) => (i === 0 ? "rgba(61,220,132,.85)" : "rgba(61,220,132,.45)")), borderWidth: 0, borderRadius: 4 },
+      ] }, options: reportOptions("%", true) });
+    }
+
+    // D. the place
+    const row = (k, v) => (v ? `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>` : "");
+    const sat = s && s.land && s.land.satellite;
+    $("rep-geo").innerHTML = [
+      row(t("rg_place"), place),
+      row(t("rg_coords"), `${fmt(state.lat, 4)}, ${fmt(state.lon, 4)}`),
+      row(t("rg_height"), q ? t("rg_height_v", { pt: fmt(q.elevation_m), grid: fmt(q.grid_elevation_m) }) : ""),
+      row(t("rg_cover"), sat && sat.center ? t("rg_cover_v", { kind: t("lc_" + sat.center) === "lc_" + sat.center ? sat.center : t("lc_" + sat.center) }) : ""),
+      row(t("rg_relief"), s && s.terrain ? String(s.terrain).replace(/^[^:]*:\s*/, "") + " (NASA SRTM 30 m)" : ""),
+      row(t("rg_grid"), t("rg_grid_v")),
+      row(t("rg_period"), `${p.baseline[0]}–${p.baseline[1]} · ${p.recent[0]}–${p.recent[1]}`),
+    ].join("");
+
+    // E. kinds of information, kept apart
+    const ds = data.datasets || [];
+    const list = (items) => `<ul>${items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+    const nasa = ds.filter((d) => d.nasa).map((d) => `${d.name}${d.resolution ? " · " + d.resolution : ""}`);
+    const other = ds.filter((d) => !d.nasa && !/Open-Meteo/.test(d.name)).map((d) => d.name);
+    const forecast = ds.filter((d) => /Open-Meteo/.test(d.name)).map((d) => d.name);
+    const method = options && options.irrigation.find((x) => x.id === state.irrigation);
+    const user = [
+      t("rk_user_soil", { v: data.soil ? name(data.soil) : "–" }),
+      t("rk_user_irr", { v: method ? name(method) : state.irrigation }),
+      t("rk_user_weights"),
+      state.field && state.field.polygon ? t("rk_user_field", { ha: fmtHa(state.field.area_ha) }) : t("rk_user_point"),
+    ];
+    $("rep-kinds").innerHTML = [
+      ["rk_nasa", "rk_nasa_d", nasa], ["rk_other", "rk_other_d", other], ["rk_forecast", "rk_forecast_d", forecast],
+      ["rk_calc", "rk_calc_d", t("rk_calc_items")], ["rk_user", "rk_user_d", user],
+    ].filter(([, , items]) => items && items.length).map(([k, d, items]) => `
+      <div class="rk"><h3>${esc(t(k))}</h3><p>${esc(t(d))}</p>${list(items)}</div>`).join("");
+
+    // F. export: print to PDF and a CSV of the numbers on this page
+    $("rep-print").disabled = false; $("rep-csv").disabled = false;
+    $("rep-print").onclick = () => window.print();
+    $("rep-csv").onclick = () => downloadReportCsv(place, today);
+  }
+
+  function reportOptions(unit, horizontal) {
+    const grid = "rgba(110,160,230,.14)", tick = "#9eb0c7";
+    return {
+      responsive: true, maintainAspectRatio: false, animation: false, indexAxis: horizontal ? "y" : "x",
+      plugins: { legend: { display: !horizontal, labels: { color: "#cfdbee", boxWidth: 14, boxHeight: 8 } },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmt(horizontal ? ctx.parsed.x : ctx.parsed.y, unit === "°C" ? 1 : 0)} ${unit}` } } },
+      scales: horizontal
+        ? { x: { min: 0, max: 100, grid: { color: grid }, ticks: { color: tick } }, y: { grid: { display: false }, ticks: { color: "#dbe4ef" } } }
+        : { x: { type: "linear", grid: { color: grid }, ticks: { color: tick, precision: 0, callback: (v) => String(v) } }, y: { grid: { color: grid }, ticks: { color: tick }, title: { display: true, text: unit, color: tick } } },
+    };
+  }
+
+  function downloadReportCsv(place, today) {
+    const c = data.climate, p = data.periods, rows = [["section", "indicator", "value", "unit", "period", "source"]];
+    const put = (...r) => rows.push(r);
+    put("place", "name", place, "", "", "OpenStreetMap");
+    put("place", "coordinates", `${state.lat}, ${state.lon}`, "deg", "", "");
+    if (data.suitability) put("summary", "land check", data.suitability.status, "", "", "EcoScope (Sentinel-2 land cover, NASA POWER climate)");
+    if (c) for (const [k, sh] of Object.entries(c.shift)) {
+      if (sh && sh.delta !== null && sh.delta !== undefined) {
+        put("climate shift", k + " baseline", sh.baseline, "", `${p.baseline[0]}-${p.baseline[1]}`, "NASA POWER");
+        put("climate shift", k + " recent", sh.recent, "", `${p.recent[0]}-${p.recent[1]}`, "NASA POWER");
+      }
+    }
+    if (c) for (const a of c.annual) put("annual", String(a.year), `t_mean=${a.t_mean ?? ""}; precip_mm=${a.precip_mm ?? ""}; et0_mm=${a.et0_mm ?? ""}`, "°C; mm; mm", String(a.year), "NASA POWER; ET0 FAO-56");
+    for (const cr of (data.crops || [])) put("crops", name(cr), fitOf(cr) ?? "", "% climate fit", `${p.recent[0]}-${p.recent[1]}`, "EcoScope calculation (FAO-56 water balance)");
+    const r = data.rotations;
+    if (r && r.items) for (const it of r.items) put("rotations", name(it), it.scores.total, "score of 100", r.period ? r.period.join("-") : "", "EcoScope calculation");
+    const csv = "﻿" + rows.map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = `EcoScope_report_${state.lat}_${state.lon}_${today}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   }
 
   function renderSources() {
@@ -1711,7 +1953,7 @@
         ${d.sources && d.sources.length ? `<div class="mono muted">${esc(d.sources.join(", "))}</div>` : ""}
         <a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.url)}</a></div>`).join("");
     $("methods").innerHTML = t("methods").map((m) => `<li>${esc(m)}</li>`).join("");
-    $("disclaimer").textContent = data.disclaimer;
+    $("disclaimer").textContent = state.lang === "uz" ? uzFix(data.disclaimer || "") : data.disclaimer;
   }
 
   // ---------- settings ----------
@@ -1887,6 +2129,19 @@
     const message = t("error", { msg: err.message });
     if ($("provider-msg")) $("provider-msg").textContent = message;
     else if ($("providers")) $("providers").textContent = message;
+  }
+
+  // A page prerendered while the pointer rested on its link is shown instantly on click. If the field settings
+  // changed between the prerender and the click, the page takes the new settings and analyses again.
+  if (document.prerendering) {
+    document.addEventListener("prerenderingchange", () => {
+      let raw = null;
+      try { raw = localStorage.getItem("terrashift"); } catch { return; }
+      if (!raw || raw === JSON.stringify(state)) return;
+      try { Object.assign(state, JSON.parse(raw)); } catch { return; }
+      applyStaticTexts();
+      if (options) { renderForms(); requestMode = state.mode === "manual" ? "manual" : "auto"; analyze(); }
+    }, { once: true });
   }
 
   // ---------- start ----------

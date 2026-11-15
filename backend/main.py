@@ -1,4 +1,4 @@
-"""Field Shift API.
+"""EcoScope API.
 
 Run from the repository root:
     uvicorn backend.main:app --reload
@@ -44,9 +44,12 @@ _load_env(Path(__file__).parent.parent / ".env")
 FALLBACK_MAX_KM = float(os.getenv("FALLBACK_MAX_KM", "150"))
 
 PRESETS = [
-    {"id": "jizzakh", "name": {"en": "Jizzakh (steppe)", "uz": "Jizzax (dasht)"}, "lat": 40.1158, "lon": 67.8422},
+    {"id": "jizzakh", "name": {"en": "Jizzakh (steppe)", "uz": "Jizzax (dasht)"}, "lat": 40.4, "lon": 67.95},
     {"id": "tashkent", "name": {"en": "Tashkent (oasis)", "uz": "Toshkent (voha)"}, "lat": 41.2995, "lon": 69.2401},
     {"id": "kyzylkum", "name": {"en": "Kyzylkum (desert)", "uz": "Qizilqum (cho'l)"}, "lat": 42.0, "lon": 63.5},
+    {"id": "nukus", "name": {"en": "Nukus fields (Karakalpakstan)", "uz": "Nukus dalalari (Qoraqalpog'iston)"}, "lat": 42.55, "lon": 59.45},
+    {"id": "khorezm", "name": {"en": "Khorezm fields", "uz": "Xorazm dalalari"}, "lat": 41.6, "lon": 60.45},
+    {"id": "andijan", "name": {"en": "Andijan fields", "uz": "Andijon dalalari"}, "lat": 40.6, "lon": 72.8},
 ]
 
 
@@ -56,7 +59,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="Field Shift API", version="2.0", lifespan=lifespan)
+app = FastAPI(title="EcoScope API", version="2.0", lifespan=lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=2000)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST", "PATCH", "DELETE"], allow_headers=["*"])
 

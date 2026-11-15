@@ -1,0 +1,7 @@
+{
+  // bun.lock is written by bun and always has trailing commas (its format allows them).
+  // VS Code reads it as JSON with comments and warns about them; as plain text it is left alone.
+  "files.associations": {
+    "bun.lock": "plaintext"
+  }
+}

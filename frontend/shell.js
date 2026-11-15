@@ -1,4 +1,4 @@
-/* Dalaviy shell: the one icon sprite and the one header shared by every dashboard page (Dala, Iqlim, ...).
+/* EcoScope shell: the one icon sprite and the one header shared by every dashboard page (Dala, Iqlim, ...).
    Each page puts <div data-shell-sprite></div> and <header data-shell-header></header> in its .dash root and loads
    this script right after them; the markup is filled in synchronously, before app.js and field.js run.
    The page decides which data providers its status pills show: <body data-providers="nasa_power,open_meteo">. */
@@ -61,7 +61,6 @@
       <nav class="dash-nav glass-navigation" data-t-aria="main_nav_label">
         <span class="nav-glow" aria-hidden="true"></span>
         <a href="/#app" data-page-link="home" data-t="nav_home"></a>
-        <a href="/rotations.html" data-page-link="rotations" data-t="nav_rotations"></a>
         <a href="/climate.html" data-page-link="climate" data-t="nav_climate"></a>
         <a href="/crops.html" data-page-link="crops" data-t="nav_crops"></a>
         <a href="/sources.html" data-page-link="sources" data-t="nav_reports"></a>

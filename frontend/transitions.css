@@ -44,3 +44,13 @@ html.vt-leave, html.vt-enter { overflow-x: clip; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   html.vt-leave body, html.vt-enter body { animation: none !important; }
 }
+
+/* ---------- a page that arrives through a transition is shown whole ----------
+   The slide is one compositor animation of the page snapshot. Entrance choreography under it (a dozen staggered
+   rises, the background fade) would add layers and style work exactly while the page moves, so it is off here. */
+html.vt-arrived .dash [data-in], html.vt-arrived .dash .dash-bg, html.vt-arrived .dash .dash-video {
+  animation: none !important; opacity: 1 !important;
+}
+/* the two snapshots are plain textures: nothing in them needs hit-testing or blending with the page below */
+::view-transition-old(root), ::view-transition-new(root) { mix-blend-mode: normal; }
+::view-transition { pointer-events: none; }
